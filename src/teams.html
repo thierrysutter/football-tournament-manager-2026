@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Équipes - Football Tournament Manager 2026</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Football Tournament Manager 2026</h1>
+            <nav aria-label="Navigation principale">
+                <ul>
+                    <li><a href="index.html">Configuration</a></li>
+                    <li><a href="teams.html" class="active" aria-current="page">Équipes</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Poules</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Résultats</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Classements</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Brackets</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <h2>Gestion des Équipes</h2>
+            
+            <div class="info-panel" role="region" aria-label="Informations du tournoi">
+                <p><strong>Tournoi :</strong> <span id="tournamentName">-</span></p>
+                <p><strong>Date :</strong> <span id="tournamentDate">-</span></p>
+                <p><strong>Équipes inscrites :</strong> <span id="teamCount">0</span> / 16</p>
+            </div>
+
+            <section class="team-form" aria-labelledby="form-title">
+                <h3 id="form-title">Ajouter une équipe</h3>
+                <form id="addTeamForm" aria-describedby="form-help">
+                    <div class="form-group">
+                        <label for="teamName">Nom de l'équipe <span class="required" aria-label="requis">*</span></label>
+                        <input 
+                            type="text" 
+                            id="teamName" 
+                            name="teamName" 
+                            required 
+                            maxlength="50"
+                            aria-required="true"
+                            aria-describedby="teamName-help"
+                        >
+                        <small id="teamName-help">Maximum 50 caractères</small>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">
+                            <span aria-hidden="true">+</span> Ajouter l'équipe
+                        </button>
+                    </div>
+                    <p id="form-help" class="help-text">Les champs marqués d'un astérisque (*) sont obligatoires.</p>
+                </form>
+            </section>
+
+            <section class="teams-list" aria-labelledby="list-title">
+                <h3 id="list-title">Liste des équipes</h3>
+                <div id="teamsList" role="list" aria-live="polite" aria-relevant="additions removals">
+                    <p class="empty-state">Aucune équipe ajoutée pour le moment.</p>
+                </div>
+            </section>
+
+            <div class="form-navigation">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
+                    <span aria-hidden="true">←</span> Retour à la configuration
+                </button>
+                <button type="button" id="continueBtn" class="btn btn-primary" disabled aria-describedby="continue-help">
+                    Continuer <span aria-hidden="true">→</span>
+                </button>
+                <p id="continue-help" class="help-text">Vous devez ajouter exactement 16 équipes pour continuer.</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Football Tournament Manager</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chargement des données du tournoi
+        document.addEventListener('DOMContentLoaded', function() {
+            const tournamentData = JSON.parse(localStorage.getItem('tournamentConfig'));
+            
+            if (!tournamentData) {
+                alert('Veuillez d\'abord configurer le tournoi.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('tournamentName').textContent = tournamentData.name;
+            document.getElementById('tournamentDate').textContent = new Date(tournamentData.date).toLocaleDateString('fr-FR');
+
+            loadTeams();
+        });
+
+        // Gestion du formulaire d'ajout d'équipe
+        document.getElementById('addTeamForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const teamName = document.getElementById('teamName').value.trim();
+            const teams = JSON.parse(localStorage.getItem('teams')) || [];
+            
+            if (teams.length >= 16) {
+                alert('Vous avez déjà ajouté 16 équipes (maximum atteint).');
+                return;
+            }
+            
+            if (teams.some(team => team.name.toLowerCase() === teamName.toLowerCase())) {
+                alert('Une équipe avec ce nom existe déjà.');
+                return;
+            }
+            
+            teams.push({
+                id: Date.now(),
+                name: teamName
+            });
+            
+            localStorage.setItem('teams', JSON.stringify(teams));
+            document.getElementById('teamName').value = '';
+            document.getElementById('teamName').focus();
+            loadTeams();
+        });
+
+        // Fonction pour charger et afficher les équipes
+        function loadTeams() {
+            const teams = JSON.parse(localStorage.getItem('teams')) || [];
+            const teamsList = document.getElementById('teamsList');
+            const teamCount = document.getElementById('teamCount');
+            const continueBtn = document.getElementById('continueBtn');
+            
+            teamCount.textContent = teams.length;
+            
+            if (teams.length === 0) {
+                teamsList.innerHTML = '<p class="empty-state">Aucune équipe ajoutée pour le moment.</p>';
+                continueBtn.disabled = true;
+                return;
+            }
+            
+            teamsList.innerHTML = teams.map((team, index) => `
+                <div class="team-item" role="listitem">
+                    <span class="team-number">${index + 1}</span>
+                    <span class="team-name">${escapeHtml(team.name)}</span>
+                    <button 
+                        type="button" 
+                        class="btn btn-delete" 
+                        onclick="deleteTeam(${team.id})"
+                        aria-label="Supprimer l'équipe ${escapeHtml(team.name)}"
+                    >
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+            `).join('');
+            
+            continueBtn.disabled = teams.length !== 16;
+        }
+
+        // Fonction pour supprimer une équipe
+        function deleteTeam(teamId) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?')) {
+                let teams = JSON.parse(localStorage.getItem('teams')) || [];
+                teams = teams.filter(team => team.id !== teamId);
+                localStorage.setItem('teams', JSON.stringify(teams));
+                loadTeams();
+            }
+        }
+
+        // Fonction pour échapper le HTML (sécurité)
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Gestion du bouton Continuer
+        document.getElementById('continueBtn').addEventListener('click', function() {
+            // Prochaine étape : composition des poules
+            window.location.href = 'groups.html';
+        });
+    </script>
+</body>
+</html>
