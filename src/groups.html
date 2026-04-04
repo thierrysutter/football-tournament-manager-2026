@@ -198,11 +198,13 @@ function escapeHtml(str) {
     return d.innerHTML;
 }
 
+    
+loadData();
+
 if (teams.length !== 16) {
     alert('Il faut exactement 16 équipes. Retour à la gestion des équipes.');
     window.location.href = 'teams.html';
 } else {
-    loadData();
     render();
 }
 </script>
