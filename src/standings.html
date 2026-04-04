@@ -1,1 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classements - Football Tournament Manager 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        /* NEXUS STYLE BASE */
+        :root, [data-theme="light"] {
+            --color-bg: #f7f6f2;
+            --color-surface: #f9f8f5;
+            --color-surface-2: #fbfbf9;
+            --color-divider: #dcd9d5;
+            --color-border: #d4d1ca;
+            --color-text: #28251d;
+            --color-text-muted: #6b6965;
+            --color-primary: #01696f;
+            --color-primary-hover: #0c4e54;
+            --color-success: #437a22;
+            --color-warning: #964219;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --font-body: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); line-height: 1.5; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+        header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+        .nav-links { display: flex; gap: 8px; list-style: none; margin-top: 16px; }
+        .nav-links a { text-decoration: none; color: var(--color-text-muted); padding: 6px 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; transition: 150ms; }
+        .nav-links a:hover { background: var(--color-divider); color: var(--color-text); }
+        .nav-links a.active { background: var(--color-primary); color: white; }
 
+        .groups-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .card-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+        .badge { background: var(--color-primary); color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+
+        table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        th { text-align: left; padding: 8px; color: var(--color-text-muted); font-weight: 600; border-bottom: 2px solid var(--color-divider); }
+        td { padding: 10px 8px; border-bottom: 1px solid var(--color-divider); }
+        .col-pts { font-weight: 700; color: var(--color-primary); }
+        .col-rank { width: 30px; font-weight: 700; }
+        .col-team { font-weight: 500; }
+        .row-qualify { background: rgba(67, 122, 34, 0.05); }
+        .row-consolant { background: rgba(150, 66, 25, 0.05); }
+
+        .footer-actions { margin-top: 40px; display: flex; justify-content: space-between; align-items: center; }
+        .btn { padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; font-size: 14px; transition: 150ms; display: inline-flex; align-items: center; gap: 8px; }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary { background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1 class="page-title">Classements des Poules</h1>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="football-tournament-manager.html">Dashboard</a></li>
+                        <li><a href="teams.html">Équipes</a></li>
+                        <li><a href="groups.html">Poules</a></li>
+                        <li><a href="matches.html">Résultats</a></li>
+                        <li><a href="standings.html" class="active">Classements</a></li>
+                        <li><a href="brackets.html">Brackets</a></li>
+                    </ul>
+                </nav>
+            </div>
+            <div id="tournament-info" style="text-align: right; color: var(--color-text-muted); font-size: 14px;">
+                <strong id="display-name">-</strong><br>
+                <span id="display-date">-</span>
+            </div>
+        </header>
+
+        <div class="groups-grid" id="standings-container">
+            <div class="card" id="card-A">
+                <h2 class="card-title"><span class="badge">Poule A</span></h2>
+                <div class="table-wrap">
+                    <table id="table-A">
+                        <thead>
+                            <tr>
+                                <th class="col-rank">#</th>
+                                <th class="col-team">Équipe</th>
+                                <th>J</th>
+                                <th>G</th>
+                                <th>N</th>
+                                <th>P</th>
+                                <th>p</th>
+                                <th>c</th>
+                                <th>+/-</th>
+                                <th class="col-pts">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tbody-A"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="card" id="card-B">
+                <h2 class="card-title"><span class="badge">Poule B</span></h2>
+                <div class="table-wrap"><table id="table-B"><thead><tr><th class="col-rank">#</th><th class="col-team">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>p</th><th>c</th><th>+/-</th><th class="col-pts">Pts</th></tr></thead><tbody id="tbody-B"></tbody></table></div>
+            </div>
+            <div class="card" id="card-C">
+                <h2 class="card-title"><span class="badge">Poule C</span></h2>
+                <div class="table-wrap"><table id="table-C"><thead><tr><th class="col-rank">#</th><th class="col-team">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>p</th><th>c</th><th>+/-</th><th class="col-pts">Pts</th></tr></thead><tbody id="tbody-C"></tbody></table></div>
+            </div>
+            <div class="card" id="card-D">
+                <h2 class="card-title"><span class="badge">Poule D</span></h2>
+                <div class="table-wrap"><table id="table-D"><thead><tr><th class="col-rank">#</th><th class="col-team">Équipe</th><th>J</th><th>G</th><th>N</th><th>P</th><th>p</th><th>c</th><th>+/-</th><th class="col-pts">Pts</th></tr></thead><tbody id="tbody-D"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="footer-actions">
+            <button class="btn btn-secondary" onclick="window.location.href='matches.html'">← Saisir les scores</button>
+            <button class="btn btn-primary" id="btn-next">Générer les phases finales →</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const config = JSON.parse(localStorage.getItem('tournamentConfig')) || {};
+            const teams = JSON.parse(localStorage.getItem('teams')) || [];
+            const groups = JSON.parse(localStorage.getItem('groups')) || {};
+            const matches = JSON.parse(localStorage.getItem('matches')) || [];
+
+            if (config.name) document.getElementById('display-name').textContent = config.name;
+            if (config.date) document.getElementById('display-date').textContent = new Date(config.date).toLocaleDateString('fr-FR');
+
+            const groupNames = ['A', 'B', 'C', 'D'];
+            groupNames.forEach(gn => {
+                const groupTeams = groups[gn] || [];
+                const stats = calculateStats(groupTeams, matches.filter(m => m.group === gn), teams);
+                renderTable(gn, stats);
+            });
+
+            document.getElementById('btn-next').addEventListener('click', () => {
+                const p1Matches = matches.filter(m => ['A','B','C','D'].includes(m.group));
+                const allDone = p1Matches.every(m => m.completed);
+                if (!allDone && !confirm("Tous les matchs de poule ne sont pas terminés. Continuer vers les phases finales ?")) return;
+                
+                const rankings = {};
+                groupNames.forEach(gn => {
+                    const groupTeams = groups[gn] || [];
+                    const stats = calculateStats(groupTeams, matches.filter(m => m.group === gn), teams);
+                    rankings[gn] = stats.map(s => s.teamId);
+                });
+                localStorage.setItem('groupRankings', JSON.stringify(rankings));
+                window.location.href = 'brackets.html';
+            });
+        });
+
+        function calculateStats(teamIds, groupMatches, allTeams) {
+            const stats = teamIds.map(id => ({
+                teamId: id,
+                name: (allTeams.find(t => t.id === id) || {}).name || 'Inconnu',
+                played: 0, won: 0, drawn: 0, lost: 0, gs: 0, ga: 0, gd: 0, pts: 0
+            }));
+            groupMatches.forEach(m => {
+                if (!m.completed) return;
+                const s1 = stats.find(s => s.teamId === m.team1Id);
+                const s2 = stats.find(s => s.teamId === m.team2Id);
+                if (!s1 || !s2) return;
+                s1.played++; s2.played++;
+                s1.gs += m.score1; s1.ga += m.score2;
+                s2.gs += m.score2; s2.ga += m.score1;
+                if (m.score1 > m.score2) { s1.won++; s2.lost++; s1.pts += 3; }
+                else if (m.score1 < m.score2) { s2.won++; s1.lost++; s2.pts += 3; }
+                else { s1.drawn++; s2.drawn++; s1.pts += 1; s2.pts += 1; }
+            });
+            stats.forEach(s => s.gd = s.gs - s.ga);
+            stats.sort((a, b) => {
+                if (b.pts !== a.pts) return b.pts - a.pts;
+                if (b.gd !== a.gd) return b.gd - a.gd;
+                const h2h = groupMatches.find(m => (m.team1Id === a.teamId && m.team2Id === b.teamId) || (m.team1Id === b.teamId && m.team2Id === a.teamId));
+                if (h2h && h2h.completed) {
+                    const diff = h2h.team1Id === a.teamId ? h2h.score1 - h2h.score2 : h2h.score2 - h2h.score1;
+                    if (diff !== 0) return diff > 0 ? -1 : 1;
+                }
+                return b.gs - a.gs;
+            });
+            return stats;
+        }
+
+        function renderTable(gn, stats) {
+            const tbody = document.getElementById('tbody-' + gn);
+            tbody.innerHTML = '';
+            stats.forEach((s, i) => {
+                const tr = document.createElement('tr');
+                tr.className = i < 2 ? 'row-qualify' : 'row-consolant';
+                tr.innerHTML = `
+                    <td class="col-rank">${i + 1}</td>
+                    <td class="col-team">${s.name}</td>
+                    <td>${s.played}</td>
+                    <td>${s.won}</td>
+                    <td>${s.drawn}</td>
+                    <td>${s.lost}</td>
+                    <td>${s.gs}</td>
+                    <td>${s.ga}</td>
+                    <td>${s.gd > 0 ? '+' : ''}${s.gd}</td>
+                    <td class="col-pts">${s.pts}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
