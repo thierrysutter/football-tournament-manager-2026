@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement Final - Football Tournament Manager 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        /* NEXUS STYLE BASE */
+        :root, [data-theme="light"] {
+            --color-bg: #f7f6f2;
+            --color-surface: #f9f8f5;
+            --color-divider: #dcd9d5;
+            --color-border: #d4d1ca;
+            --color-text: #28251d;
+            --color-text-muted: #6b6965;
+            --color-primary: #01696f;
+            --color-primary-hover: #0c4e54;
+            --color-success: #437a22;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --font-body: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); line-height: 1.5; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        header { margin-bottom: 32px; display: flex; justify-content: space-between; align-items: flex-end; }
+        .page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; }
+        .nav-links { display: flex; gap: 8px; list-style: none; margin-top: 16px; }
+        .nav-links a { text-decoration: none; color: var(--color-text-muted); padding: 6px 12px; border-radius: var(--radius-md); font-size: 14px; font-weight: 500; transition: 150ms; }
+        .nav-links a:hover { background: var(--color-divider); color: var(--color-text); }
+        .nav-links a.active { background: var(--color-primary); color: white; }
+
+        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th { text-align: left; padding: 12px; color: var(--color-text-muted); font-weight: 600; border-bottom: 2px solid var(--color-divider); text-transform: uppercase; font-size: 11px; letter-spacing: 0.05em; }
+        td { padding: 16px 12px; border-bottom: 1px solid var(--color-divider); font-size: 14px; }
+        .rank-badge { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: var(--color-divider); font-weight: 700; font-size: 12px; }
+        .rank-1 .rank-badge { background: #FFD700; color: #856404; }
+        .rank-2 .rank-badge { background: #C0C0C0; color: #383d41; }
+        .rank-3 .rank-badge { background: #CD7F32; color: #721c24; }
+        .team-name { font-weight: 600; font-size: 16px; }
+        .podium-section { display: flex; justify-content: center; align-items: flex-end; gap: 24px; margin-bottom: 48px; min-height: 240px; }
+        .podium-card { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .podium-box { width: 140px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 32px; border-radius: var(--radius-md) var(--radius-md) 0 0; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .rank-1 .podium-box { height: 160px; background: linear-gradient(to bottom, #FFD700, #FDB931); color: #856404; }
+        .rank-2 .podium-box { height: 120px; background: linear-gradient(to bottom, #C0C0C0, #A9A9A9); color: #383d41; }
+        .rank-3 .podium-box { height: 90px; background: linear-gradient(to bottom, #CD7F32, #A0522D); color: #fff; }
+
+        .btn { padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; font-size: 14px; transition: 150ms; display: inline-flex; align-items: center; gap: 8px; text-decoration: none; }
+        .btn-secondary { background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-secondary:hover { background: var(--color-divider); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <h1 class="page-title">Classement Final</h1>
+                <nav>
+                    <ul class="nav-links">
+                        <li><a href="football-tournament-manager.html">Dashboard</a></li>
+                        <li><a href="teams.html">Équipes</a></li>
+                        <li><a href="groups.html">Poules</a></li>
+                        <li><a href="matches.html">Résultats</a></li>
+                        <li><a href="standings.html">Classements</a></li>
+                        <li><a href="brackets.html">Brackets</a></li>
+                        <li><a href="final-results.html" class="active">Podium</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <div id="podium" class="podium-section">
+            <!-- Podium generated by JS -->
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 80px">Rang</th>
+                        <th>Équipe</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="final-ranking-body">
+                    <!-- JS generated -->
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 32px; text-align: center;">
+            <a href="football-tournament-manager.html" class="btn btn-secondary">Retour au Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const teams = JSON.parse(localStorage.getItem('teams')) || [];
+            const p2Matches = JSON.parse(localStorage.getItem('p2Matches')) || [];
+            
+            if (p2Matches.length === 0) {
+                alert("Les phases finales n'ont pas encore été jouées.");
+                window.location.href = 'brackets.html';
+                return;
+            }
+
+            const ranking = calculateFinalRanking(p2Matches, teams);
+            renderRanking(ranking);
+            renderPodium(ranking);
+        });
+
+        function calculateFinalRanking(matches, teams) {
+            const getWinner = (id) => (matches.find(m => m.id === id) || {}).winnerId;
+            const getLoser = (id) => (matches.find(m => m.id === id) || {}).loserId;
+            const getTeamName = (id) => {
+                const team = teams.find(t => t.id === id);
+                return team ? team.name : 'En attente...';
+            };
+
+            const finalRanking = [
+                { rank: 1, teamId: getWinner('F1'), status: 'Vainqueur' },
+                { rank: 2, teamId: getLoser('F1'), status: 'Finaliste' },
+                { rank: 3, teamId: getWinner('F2'), status: '3ème place' },
+                { rank: 4, teamId: getLoser('F2'), status: '4ème place' },
+                { rank: 5, teamId: getWinner('F3'), status: '5ème place' },
+                { rank: 6, teamId: getLoser('F3'), status: '6ème place' },
+                { rank: 7, teamId: getWinner('F4'), status: '7ème place' },
+                { rank: 8, teamId: getLoser('F4'), status: '8ème place' },
+                { rank: 9, teamId: getWinner('F5'), status: '9ème place' },
+                { rank: 10, teamId: getLoser('F5'), status: '10ème place' },
+                { rank: 11, teamId: getWinner('F6'), status: '11ème place' },
+                { rank: 12, teamId: getLoser('F6'), status: '12ème place' },
+                { rank: 13, teamId: getWinner('F7'), status: '13ème place' },
+                { rank: 14, teamId: getLoser('F7'), status: '14ème place' },
+                { rank: 15, teamId: getWinner('F8'), status: '15ème place' },
+                { rank: 16, teamId: getLoser('F8'), status: '16ème place' }
+            ];
+
+            return finalRanking.map(r => ({
+                ...r,
+                name: getTeamName(r.teamId)
+            }));
+        }
+
+        function renderRanking(ranking) {
+            const body = document.getElementById('final-ranking-body');
+            body.innerHTML = '';
+            ranking.forEach(r => {
+                const tr = document.createElement('tr');
+                if (r.rank <= 3) tr.className = 'rank-' + r.rank;
+                tr.innerHTML = `
+                    <td><div class="rank-badge">${r.rank}</div></td>
+                    <td><span class="team-name">${r.name}</span></td>
+                    <td style="color: var(--color-text-muted); font-size: 13px;">${r.status}</td>
+                `;
+                body.appendChild(tr);
+            });
+        }
+
+        function renderPodium(ranking) {
+            const podium = document.getElementById('podium');
+            const top3 = [ranking[1], ranking[0], ranking[2]]; // 2nd, 1st, 3rd
+            
+            podium.innerHTML = top3.map(r => `
+                <div class="podium-card rank-${r.rank}">
+                    <div class="team-name" style="text-align:center">${r.name}</div>
+                    <div class="podium-box">${r.rank}</div>
+                </div>
+            `).join('');
+        }
+    </script>
+</body>
+</html>
