@@ -4,7 +4,44 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Saisie des Résultats - Football Tournament Manager 2026</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+        <style>
+        :root {
+            --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-divider: #dcd9d5;
+            --color-border: #d4d1ca; --color-text: #28251d; --color-text-muted: #6b6965;
+            --color-primary: #01696f; --color-primary-hover: #0c4e54;
+            --radius-md: 0.5rem; --radius-lg: 0.75rem; --font-body: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); line-height: 1.5; }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        header { margin-bottom: 32px; }
+        .page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+        .page-subtitle { color: var(--color-text-muted); margin-top: 4px; font-size: 14px; }
+        nav ul { display: flex; gap: 6px; list-style: none; margin-top: 16px; flex-wrap: wrap; }
+        nav ul a { text-decoration: none; color: var(--color-text-muted); padding: 5px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; transition: 150ms; }
+        nav ul a:hover { background: var(--color-divider); color: var(--color-text); }
+        nav ul a.active { background: var(--color-primary); color: white; }
+        nav ul a.disabled { pointer-events: none; opacity: 0.35; }
+        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; }
+        .card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+        .tabs-nav { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tab-btn { padding: 8px 16px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); cursor: pointer; font-size: 13px; font-weight: 600; transition: 150ms; }
+        .tab-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+        .match-card { background: white; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
+        .team-name { flex: 1; font-weight: 500; font-size: 14px; }
+        .match-score { display: flex; align-items: center; gap: 8px; }
+        .match-score input { width: 60px; text-align: center; padding: 8px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-size: 14px; font-weight: 600; }
+        .match-score .separator { color: var(--color-text-muted); font-weight: 600; }
+        .btn { padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; font-size: 14px; transition: 150ms; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary { background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); }
+        .footer-actions { display: flex; justify-content: space-between; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--color-divider); }
+        .help-text { font-size: 13px; color: var(--color-text-muted); margin-top: 8px; }
+    </style>
 </head>
 <body>
     <div class="container">
