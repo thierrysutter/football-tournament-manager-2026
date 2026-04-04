@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Saisie des Résultats - Football Tournament Manager 2026</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Football Tournament Manager 2026</h1>
+            <nav aria-label="Navigation principale">
+                <ul>
+                    <li><a href="index.html">Configuration</a></li>
+                    <li><a href="teams.html">Équipes</a></li>
+                    <li><a href="groups.html">Poules</a></li>
+                    <li><a href="matches.html" class="active" aria-current="page">Résultats</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Classements</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Brackets</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <h2>Saisie des Résultats de Poules</h2>
+            
+            <div class="info-panel" role="region" aria-label="Informations du tournoi">
+                <p><strong>Tournoi :</strong> <span id="tournamentName">-</span></p>
+                <p><strong>Étape :</strong> Phase de Poules</p>
+            </div>
+
+            <nav class="tabs-nav" aria-label="Sélection de la poule">
+                <button class="tab-btn active" data-group="A">Poule A</button>
+                <button class="tab-btn" data-group="B">Poule B</button>
+                <button class="tab-btn" data-group="C">Poule C</button>
+                <button class="tab-btn" data-group="D">Poule D</button>
+            </nav>
+
+            <section class="matches-section" aria-labelledby="matches-title">
+                <h3 id="matches-title">Matchs de la Poule <span id="currentGroupName">A</span></h3>
+                <div id="matchesContainer" class="matches-list">
+                    <!-- Les matchs seront générés ici -->
+                </div>
+            </section>
+
+            <div class="form-navigation">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='groups.html'">
+                    <span aria-hidden="true">←</span> Retour aux poules
+                </button>
+                <button type="button" id="continueBtn" class="btn btn-primary" aria-describedby="continue-help">
+                    Voir les classements <span aria-hidden="true">→</span>
+                </button>
+                <p id="continue-help" class="help-text">Vous pouvez consulter les classements à tout moment.</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Football Tournament Manager</p>
+        </footer>
+    </div>
+
+    <script>
+        let teams = [];
+        let groups = {};
+        let matches = [];
+        let currentGroup = 'A';
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const tournamentData = JSON.parse(localStorage.getItem('tournamentConfig'));
+            teams = JSON.parse(localStorage.getItem('teams')) || [];
+            groups = JSON.parse(localStorage.getItem('groups')) || {};
+            
+            if (!tournamentData || !groups.A || groups.A.length !== 4) {
+                alert('Veuillez d\'abord répartir les équipes dans les poules.');
+                window.location.href = 'groups.html';
+                return;
+            }
+
+            document.getElementById('tournamentName').textContent = tournamentData.name;
+
+            // Charger les matchs existants ou les générer
+            const savedMatches = JSON.parse(localStorage.getItem('matches'));
+            if (savedMatches && savedMatches.length > 0) {
+                matches = savedMatches;
+            } else {
+                generateAllMatches();
+            }
+
+            renderMatches(currentGroup);
+
+            // Gestion des onglets
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentGroup = this.getAttribute('data-group');
+                    document.getElementById('currentGroupName').textContent = currentGroup;
+                    renderMatches(currentGroup);
+                });
+            });
+        });
+
+        function generateAllMatches() {
+            matches = [];
+            ['A', 'B', 'C', 'D'].forEach(groupName => {
+                const groupTeamIds = groups[groupName];
+                // Algorithme de Berger pour 4 équipes
+                // 1 vs 2, 3 vs 4
+                // 1 vs 3, 2 vs 4
+                // 1 vs 4, 2 vs 3
+                const pairings = [
+                    [0, 1], [2, 3],
+                    [0, 2], [1, 3],
+                    [0, 3], [1, 2]
+                ];
+
+                pairings.forEach((pair, index) => {
+                    matches.push({
+                        id: `${groupName}-${index}`,
+                        group: groupName,
+                        team1Id: groupTeamIds[pair[0]],
+                        team2Id: groupTeamIds[pair[1]],
+                        score1: null,
+                        score2: null,
+                        completed: false
+                    });
+                });
+            });
+            localStorage.setItem('matches', JSON.stringify(matches));
+        }
+
+        function renderMatches(groupName) {
+            const container = document.getElementById('matchesContainer');
+            container.innerHTML = '';
+            
+            const groupMatches = matches.filter(m => m.group === groupName);
+            
+            groupMatches.forEach(match => {
+                const team1 = teams.find(t => t.id === match.team1Id);
+                const team2 = teams.find(t => t.id === match.team2Id);
+                
+                const matchDiv = document.createElement('div');
+                matchDiv.className = 'match-card';
+                matchDiv.innerHTML = `
+                    <div class="match-team team1">
+                        <span class="team-name">${team1.name}</span>
+                    </div>
+                    <div class="match-score">
+                        <input type="number" min="0" value="${match.score1 !== null ? match.score1 : ''}" 
+                               onchange="updateScore('${match.id}', 1, this.value)" aria-label="Score ${team1.name}">
+                        <span class="separator">-</span>
+                        <input type="number" min="0" value="${match.score2 !== null ? match.score2 : ''}" 
+                               onchange="updateScore('${match.id}', 2, this.value)" aria-label="Score ${team2.name}">
+                    </div>
+                    <div class="match-team team2">
+                        <span class="team-name">${team2.name}</span>
+                    </div>
+                `;
+                container.appendChild(matchDiv);
+            });
+        }
+
+        function updateScore(matchId, teamIndex, value) {
+            const match = matches.find(m => m.id === matchId);
+            const score = value === '' ? null : parseInt(value);
+            
+            if (teamIndex === 1) match.score1 = score;
+            else match.score2 = score;
+            
+            match.completed = (match.score1 !== null && match.score2 !== null);
+            
+            localStorage.setItem('matches', JSON.stringify(matches));
+        }
+
+        document.getElementById('continueBtn').addEventListener('click', function() {
+            window.location.href = 'standings.html';
+        });
+    </script>
+</body>
+</html>
