@@ -446,4 +446,11 @@ L'application est conçue selon une approche **"accessibility by design"** et vi
 
 ---
 
+**Note** : Tous les points fonctionnels (règles de départage, matchs de classement, grilles d'appariement, export JSON v1) sont validés et intégrés dans la spécification. Les points résiduels ci-dessus concernent uniquement l'implémentation technique et l'UX.
+
 *Version 0.3 — Spécification complète. Prêt pour le développement écran par écran.*
+
+
+---
+
+*Version 0.3 — Spécification complète et validée. Prêt pour le développement écran par écran.*
