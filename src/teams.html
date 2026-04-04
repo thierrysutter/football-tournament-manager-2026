@@ -3,183 +3,209 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Équipes - Football Tournament Manager 2026</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Gestion des Équipes - FTM 2026</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #f7f6f2; --color-surface: #f9f8f5; --color-divider: #dcd9d5;
+            --color-border: #d4d1ca; --color-text: #28251d; --color-text-muted: #6b6965;
+            --color-primary: #01696f; --color-primary-hover: #0c4e54;
+            --color-error: #a12c7b; --radius-md: 0.5rem; --radius-lg: 0.75rem;
+            --font-body: 'Inter', sans-serif;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: var(--font-body); background: var(--color-bg); color: var(--color-text); line-height: 1.5; }
+        .container { max-width: 760px; margin: 0 auto; padding: 40px 20px; }
+        header { margin-bottom: 32px; }
+        .page-title { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; }
+        .page-subtitle { color: var(--color-text-muted); margin-top: 4px; font-size: 14px; }
+        nav ul { display: flex; gap: 6px; list-style: none; margin-top: 16px; flex-wrap: wrap; }
+        nav ul a { text-decoration: none; color: var(--color-text-muted); padding: 5px 12px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; transition: 150ms; }
+        nav ul a:hover { background: var(--color-divider); color: var(--color-text); }
+        nav ul a.active { background: var(--color-primary); color: white; }
+        nav ul a.disabled { pointer-events: none; opacity: 0.35; }
+        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 20px; }
+        .card-title { font-size: 15px; font-weight: 700; margin-bottom: 16px; }
+        .progress-wrap { margin-bottom: 6px; }
+        .progress-bar { background: var(--color-divider); border-radius: 99px; height: 8px; }
+        .progress-fill { background: var(--color-primary); border-radius: 99px; height: 8px; transition: width 300ms; }
+        .progress-label { font-size: 13px; color: var(--color-text-muted); margin-top: 6px; }
+        .progress-label strong { color: var(--color-primary); font-weight: 700; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row input { flex: 1; padding: 10px 13px; border: 1px solid var(--color-border); border-radius: var(--radius-md); font-family: inherit; font-size: 14px; }
+        .form-row input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(1,105,111,0.1); }
+        .btn { padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: none; font-size: 14px; transition: 150ms; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-primary:disabled, .btn-primary.disabled { opacity: 0.45; pointer-events: none; cursor: not-allowed; }
+        .btn-secondary { background: var(--color-surface); border: 1px solid var(--color-border); color: var(--color-text); }
+        .btn-secondary:hover { background: var(--color-divider); }
+        .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(195px,1fr)); gap: 10px; }
+        .team-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: white; border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+        .team-num { width: 22px; height: 22px; border-radius: 50%; background: rgba(1,105,111,0.1); color: var(--color-primary); font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .team-name { font-weight: 500; font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-delete { background: none; border: none; cursor: pointer; color: var(--color-text-muted); padding: 2px 5px; border-radius: 4px; font-size: 15px; line-height: 1; transition: 150ms; }
+        .btn-delete:hover { color: var(--color-error); }
+        .empty-state { text-align: center; padding: 32px; color: var(--color-text-muted); font-size: 14px; }
+        .footer-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--color-divider); }
+        .validation-msg { font-size: 13px; color: var(--color-text-muted); }
+        .success-text { color: #437a22; font-weight: 600; }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Football Tournament Manager 2026</h1>
-            <nav aria-label="Navigation principale">
-                <ul>
-                    <li><a href="index.html">Configuration</a></li>
-                    <li><a href="teams.html" class="active" aria-current="page">Équipes</a></li>
-                    <li><a href="#" class="disabled" aria-disabled="true">Poules</a></li>
-                    <li><a href="#" class="disabled" aria-disabled="true">Résultats</a></li>
-                    <li><a href="#" class="disabled" aria-disabled="true">Classements</a></li>
-                    <li><a href="#" class="disabled" aria-disabled="true">Brackets</a></li>
-                </ul>
-            </nav>
-        </header>
+<div class="container">
+    <header>
+        <h1 class="page-title">Gestion des Équipes</h1>
+        <p class="page-subtitle" id="subtitleTournament">—</p>
+        <nav>
+            <ul>
+                <li><a href="../index.html">← Configuration</a></li>
+                <li><a href="teams.html" class="active">Équipes</a></li>
+                <li><a href="groups.html" id="nav-groups" class="disabled">Poules</a></li>
+                <li><a href="matches.html" id="nav-matches" class="disabled">Matchs</a></li>
+                <li><a href="standings.html" id="nav-standings" class="disabled">Classements</a></li>
+                <li><a href="brackets.html" id="nav-brackets" class="disabled">Brackets</a></li>
+            </ul>
+        </nav>
+    </header>
 
-        <main>
-            <h2>Gestion des Équipes</h2>
-            
-            <div class="info-panel" role="region" aria-label="Informations du tournoi">
-                <p><strong>Tournoi :</strong> <span id="tournamentName">-</span></p>
-                <p><strong>Date :</strong> <span id="tournamentDate">-</span></p>
-                <p><strong>Équipes inscrites :</strong> <span id="teamCount">0</span> / 16</p>
-            </div>
-
-            <section class="team-form" aria-labelledby="form-title">
-                <h3 id="form-title">Ajouter une équipe</h3>
-                <form id="addTeamForm" aria-describedby="form-help">
-                    <div class="form-group">
-                        <label for="teamName">Nom de l'équipe <span class="required" aria-label="requis">*</span></label>
-                        <input 
-                            type="text" 
-                            id="teamName" 
-                            name="teamName" 
-                            required 
-                            maxlength="50"
-                            aria-required="true"
-                            aria-describedby="teamName-help"
-                        >
-                        <small id="teamName-help">Maximum 50 caractères</small>
-                    </div>
-                    
-                    <div class="form-actions">
-                        <button type="submit" class="btn btn-primary">
-                            <span aria-hidden="true">+</span> Ajouter l'équipe
-                        </button>
-                    </div>
-                    <p id="form-help" class="help-text">Les champs marqués d'un astérisque (*) sont obligatoires.</p>
-                </form>
-            </section>
-
-            <section class="teams-list" aria-labelledby="list-title">
-                <h3 id="list-title">Liste des équipes</h3>
-                <div id="teamsList" role="list" aria-live="polite" aria-relevant="additions removals">
-                    <p class="empty-state">Aucune équipe ajoutée pour le moment.</p>
-                </div>
-            </section>
-
-            <div class="form-navigation">
-                <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
-                    <span aria-hidden="true">←</span> Retour à la configuration
-                </button>
-                <button type="button" id="continueBtn" class="btn btn-primary" disabled aria-describedby="continue-help">
-                    Continuer <span aria-hidden="true">→</span>
-                </button>
-                <p id="continue-help" class="help-text">Vous devez ajouter exactement 16 équipes pour continuer.</p>
-            </div>
-        </main>
-
-        <footer>
-            <p>&copy; 2026 Football Tournament Manager</p>
-        </footer>
+    <div class="card">
+        <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+        </div>
+        <p class="progress-label"><strong id="teamCount">0</strong> / 16 équipes ajoutées</p>
     </div>
 
-    <script>
-        // Chargement des données du tournoi
-        document.addEventListener('DOMContentLoaded', function() {
-            const tournamentData = JSON.parse(localStorage.getItem('tournamentConfig'));
-            
-            if (!tournamentData) {
-                alert('Veuillez d\'abord configurer le tournoi.');
-                window.location.href = 'index.html';
-                return;
-            }
+    <div class="card">
+        <h2 class="card-title">Ajouter une équipe</h2>
+        <form id="addTeamForm">
+            <div class="form-row">
+                <input type="text" id="teamName" placeholder="Nom de l'équipe" maxlength="50" required autocomplete="off">
+                <button type="submit" class="btn btn-primary" id="addBtn">+ Ajouter</button>
+            </div>
+        </form>
+    </div>
 
-            document.getElementById('tournamentName').textContent = tournamentData.name;
-            document.getElementById('tournamentDate').textContent = new Date(tournamentData.date).toLocaleDateString('fr-FR');
+    <div class="card">
+        <h2 class="card-title">Liste des équipes</h2>
+        <div id="teamsList"><div class="empty-state">Aucune équipe ajoutée pour le moment.</div></div>
+    </div>
 
-            loadTeams();
-        });
+    <div class="footer-actions">
+        <a href="../index.html" class="btn btn-secondary">← Retour</a>
+        <div style="display:flex;align-items:center;gap:16px">
+            <span class="validation-msg" id="validationMsg">Il faut 16 équipes pour continuer.</span>
+            <a href="groups.html" class="btn btn-primary disabled" id="continueBtn">Générer les poules →</a>
+        </div>
+    </div>
+</div>
 
-        // Gestion du formulaire d'ajout d'équipe
-        document.getElementById('addTeamForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const teamName = document.getElementById('teamName').value.trim();
-            const teams = JSON.parse(localStorage.getItem('teams')) || [];
-            
-            if (teams.length >= 16) {
-                alert('Vous avez déjà ajouté 16 équipes (maximum atteint).');
-                return;
-            }
-            
-            if (teams.some(team => team.name.toLowerCase() === teamName.toLowerCase())) {
-                alert('Une équipe avec ce nom existe déjà.');
-                return;
-            }
-            
-            teams.push({
-                id: Date.now(),
-                name: teamName
-            });
-            
-            localStorage.setItem('teams', JSON.stringify(teams));
-            document.getElementById('teamName').value = '';
-            document.getElementById('teamName').focus();
-            loadTeams();
-        });
+<script>
+    const CONFIG_KEY = 'tournamentConfig';
+    const TEAMS_KEY  = 'teams';
 
-        // Fonction pour charger et afficher les équipes
-        function loadTeams() {
-            const teams = JSON.parse(localStorage.getItem('teams')) || [];
-            const teamsList = document.getElementById('teamsList');
-            const teamCount = document.getElementById('teamCount');
-            const continueBtn = document.getElementById('continueBtn');
-            
-            teamCount.textContent = teams.length;
-            
-            if (teams.length === 0) {
-                teamsList.innerHTML = '<p class="empty-state">Aucune équipe ajoutée pour le moment.</p>';
-                continueBtn.disabled = true;
-                return;
-            }
-            
-            teamsList.innerHTML = teams.map((team, index) => `
-                <div class="team-item" role="listitem">
-                    <span class="team-number">${index + 1}</span>
-                    <span class="team-name">${escapeHtml(team.name)}</span>
-                    <button 
-                        type="button" 
-                        class="btn btn-delete" 
-                        onclick="deleteTeam(${team.id})"
-                        aria-label="Supprimer l'équipe ${escapeHtml(team.name)}"
-                    >
-                        <span aria-hidden="true">×</span>
-                    </button>
-                </div>
-            `).join('');
-            
-            continueBtn.disabled = teams.length !== 16;
+    function loadState() {
+        return {
+            config: JSON.parse(localStorage.getItem(CONFIG_KEY)),
+            teams:  JSON.parse(localStorage.getItem(TEAMS_KEY)) || []
+        };
+    }
+
+    function saveTeams(teams) {
+        localStorage.setItem(TEAMS_KEY, JSON.stringify(teams));
+    }
+
+    function render() {
+        const { config, teams } = loadState();
+
+        // Sous-titre
+        if (config && config.name) {
+            document.getElementById('subtitleTournament').textContent = config.name
+                + (config.date ? '  —  ' + new Date(config.date).toLocaleDateString('fr-FR') : '');
         }
 
-        // Fonction pour supprimer une équipe
-        function deleteTeam(teamId) {
-            if (confirm('Êtes-vous sûr de vouloir supprimer cette équipe ?')) {
-                let teams = JSON.parse(localStorage.getItem('teams')) || [];
-                teams = teams.filter(team => team.id !== teamId);
-                localStorage.setItem('teams', JSON.stringify(teams));
-                loadTeams();
-            }
+        // Progression
+        const count = teams.length;
+        document.getElementById('teamCount').textContent = count;
+        document.getElementById('progressFill').style.width = (count / 16 * 100) + '%';
+
+        // Formulaire
+        document.getElementById('addBtn').disabled    = count >= 16;
+        document.getElementById('teamName').disabled  = count >= 16;
+
+        // Liste
+        const list = document.getElementById('teamsList');
+        if (teams.length === 0) {
+            list.innerHTML = '<div class="empty-state">Aucune équipe ajoutée pour le moment.</div>';
+        } else {
+            list.innerHTML = '<div class="teams-grid">' +
+                teams.map((t, i) => `
+                    <div class="team-item">
+                        <span class="team-num">${i + 1}</span>
+                        <span class="team-name">${escapeHtml(t.name)}</span>
+                        <button class="btn-delete" onclick="deleteTeam(${t.id})" title="Supprimer">&times;</button>
+                    </div>`).join('') +
+                '</div>';
         }
 
-        // Fonction pour échapper le HTML (sécurité)
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
+        // Bouton continuer
+        const btn = document.getElementById('continueBtn');
+        const msg = document.getElementById('validationMsg');
+        if (count === 16) {
+            btn.classList.remove('disabled');
+            msg.innerHTML = '<span class="success-text">✓ 16 équipes prêtes !</span>';
+            document.getElementById('nav-groups').classList.remove('disabled');
+        } else {
+            btn.classList.add('disabled');
+            msg.textContent = `Il manque ${16 - count} équipe(s) pour continuer.`;
+            document.getElementById('nav-groups').classList.add('disabled');
         }
+    }
 
-        // Gestion du bouton Continuer
-        document.getElementById('continueBtn').addEventListener('click', function() {
-            // Prochaine étape : composition des poules
-            window.location.href = 'groups.html';
-        });
-    </script>
+    document.getElementById('addTeamForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const { config, teams } = loadState();
+        if (!config) { alert('Veuillez d\'abord configurer le tournoi.'); window.location.href = '../index.html'; return; }
+        const name = document.getElementById('teamName').value.trim();
+        if (!name) return;
+        if (teams.length >= 16) { alert('Maximum 16 équipes atteint.'); return; }
+        if (teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+            alert('Une équipe avec ce nom existe déjà.');
+            return;
+        }
+        teams.push({ id: Date.now(), name });
+        saveTeams(teams);
+        document.getElementById('teamName').value = '';
+        document.getElementById('teamName').focus();
+        render();
+    });
+
+    window.deleteTeam = function(id) {
+        if (!confirm('Supprimer cette équipe ?')) return;
+        const { teams } = loadState();
+        saveTeams(teams.filter(t => t.id !== id));
+        // Réinitialiser les poules si on modifie les équipes
+        localStorage.removeItem('groups');
+        localStorage.removeItem('matches');
+        render();
+    };
+
+    function escapeHtml(str) {
+        const d = document.createElement('div');
+        d.textContent = str;
+        return d.innerHTML;
+    }
+
+    // Vérification initiale
+    const { config } = loadState();
+    if (!config) {
+        alert('Veuillez d\'abord configurer le tournoi.');
+        window.location.href = '../index.html';
+    } else {
+        render();
+    }
+</script>
 </body>
 </html>
