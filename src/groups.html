@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Composition des Poules - Football Tournament Manager 2026</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Football Tournament Manager 2026</h1>
+            <nav aria-label="Navigation principale">
+                <ul>
+                    <li><a href="index.html">Configuration</a></li>
+                    <li><a href="teams.html">Équipes</a></li>
+                    <li><a href="groups.html" class="active" aria-current="page">Poules</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Résultats</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Classements</a></li>
+                    <li><a href="#" class="disabled" aria-disabled="true">Brackets</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main>
+            <h2>Composition des Poules</h2>
+            
+            <div class="info-panel" role="region" aria-label="Informations du tournoi">
+                <p><strong>Tournoi :</strong> <span id="tournamentName">-</span></p>
+                <p><strong>Date :</strong> <span id="tournamentDate">-</span></p>
+            </div>
+
+            <section class="groups-composition" aria-labelledby="composition-title">
+                <h3 id="composition-title">Répartition des équipes</h3>
+                
+                <div class="composition-actions">
+                    <button type="button" id="randomBtn" class="btn btn-secondary">
+                        <span aria-hidden="true">↻</span> Répartition aléatoire
+                    </button>
+                    <button type="button" id="resetBtn" class="btn btn-secondary">
+                        <span aria-hidden="true">✗</span> Réinitialiser
+                    </button>
+                </div>
+
+                <div class="groups-container" role="group" aria-label="Composition des poules">
+                    <!-- Liste des équipes non assignées -->
+                    <div class="unassigned-teams" role="region" aria-labelledby="unassigned-title">
+                        <h4 id="unassigned-title">Équipes à répartir <span id="unassignedCount" class="count">16</span></h4>
+                        <div id="unassignedList" class="team-list" role="list">
+                            <!-- Les équipes seront ajoutées ici dynamiquement -->
+                        </div>
+                    </div>
+
+                    <!-- Les 4 poules -->
+                    <div class="groups-grid">
+                        <div class="group-box" data-group="A" role="region" aria-labelledby="group-a-title">
+                            <h4 id="group-a-title">Poule A <span class="count">0/4</span></h4>
+                            <div class="group-teams" data-group="A" role="list">
+                                <!-- Équipes de la poule A -->
+                            </div>
+                        </div>
+
+                        <div class="group-box" data-group="B" role="region" aria-labelledby="group-b-title">
+                            <h4 id="group-b-title">Poule B <span class="count">0/4</span></h4>
+                            <div class="group-teams" data-group="B" role="list">
+                                <!-- Équipes de la poule B -->
+                            </div>
+                        </div>
+
+                        <div class="group-box" data-group="C" role="region" aria-labelledby="group-c-title">
+                            <h4 id="group-c-title">Poule C <span class="count">0/4</span></h4>
+                            <div class="group-teams" data-group="C" role="list">
+                                <!-- Équipes de la poule C -->
+                            </div>
+                        </div>
+
+                        <div class="group-box" data-group="D" role="region" aria-labelledby="group-d-title">
+                            <h4 id="group-d-title">Poule D <span class="count">0/4</span></h4>
+                            <div class="group-teams" data-group="D" role="list">
+                                <!-- Équipes de la poule D -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="form-navigation">
+                <button type="button" class="btn btn-secondary" onclick="window.location.href='teams.html'">
+                    <span aria-hidden="true">←</span> Retour aux équipes
+                </button>
+                <button type="button" id="continueBtn" class="btn btn-primary" disabled aria-describedby="continue-help">
+                    Valider et continuer <span aria-hidden="true">→</span>
+                </button>
+                <p id="continue-help" class="help-text">Vous devez répartir les 16 équipes dans les 4 poules (4 équipes par poule).</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Football Tournament Manager</p>
+        </footer>
+    </div>
+
+    <script>
+        // Variables globales
+        let teams = [];
+        let groups = { A: [], B: [], C: [], D: [] };
+
+        // Chargement des données
+        document.addEventListener('DOMContentLoaded', function() {
+            const tournamentData = JSON.parse(localStorage.getItem('tournamentConfig'));
+            teams = JSON.parse(localStorage.getItem('teams')) || [];
+            
+            if (!tournamentData || teams.length !== 16) {
+                alert('Veuillez d\'abord configurer le tournoi et ajouter 16 équipes.');
+                window.location.href = 'teams.html';
+                return;
+            }
+
+            document.getElementById('tournamentName').textContent = tournamentData.name;
+            document.getElementById('tournamentDate').textContent = new Date(tournamentData.date).toLocaleDateString('fr-FR');
+
+            // Charger la composition existante si disponible
+            const savedGroups = JSON.parse(localStorage.getItem('groups'));
+            if (savedGroups) {
+                groups = savedGroups;
+            }
+
+            renderGroups();
+        });
+
+        // Fonction pour rendre les poules
+        function renderGroups() {
+            const unassignedList = document.getElementById('unassignedList');
+            unassignedList.innerHTML = '';
+            
+            // Créer un set des équipes assignées
+            const assignedTeamIds = new Set();
+            ['A', 'B', 'C', 'D'].forEach(groupName => {
+                groups[groupName].forEach(teamId => assignedTeamIds.add(teamId));
+            });
+
+            // Afficher les équipes non assignées
+            const unassignedTeams = teams.filter(team => !assignedTeamIds.has(team.id));
+            document.getElementById('unassignedCount').textContent = unassignedTeams.length;
+            
+            unassignedTeams.forEach(team => {
+                const teamEl = createTeamElement(team, null);
+                unassignedList.appendChild(teamEl);
+            });
+
+            // Afficher les équipes dans chaque poule
+            ['A', 'B', 'C', 'D'].forEach(groupName => {
+                const groupContainer = document.querySelector(`.group-teams[data-group="${groupName}"]`);
+                groupContainer.innerHTML = '';
+                const groupBox = groupContainer.closest('.group-box');
+                const countSpan = groupBox.querySelector('.count');
+                countSpan.textContent = `${groups[groupName].length}/4`;
+                
+                groups[groupName].forEach(teamId => {
+                    const team = teams.find(t => t.id === teamId);
+                    if (team) {
+                        const teamEl = createTeamElement(team, groupName);
+                        groupContainer.appendChild(teamEl);
+                    }
+                });
+            });
+
+            updateContinueButton();
+        }
+
+        // Créer un élément équipe
+        function createTeamElement(team, groupName) {
+            const div = document.createElement('div');
+            div.className = 'team-item-draggable';
+            div.setAttribute('role', 'listitem');
+            div.setAttribute('data-team-id', team.id);
+            
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'team-name';
+            nameSpan.textContent = team.name;
+            div.appendChild(nameSpan);
+
+            if (groupName) {
+                // Bouton pour retirer de la poule
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'btn-sm';
+                removeBtn.innerHTML = '<span aria-hidden="true">✗</span>';
+                removeBtn.setAttribute('aria-label', `Retirer ${team.name} de la poule ${groupName}`);
+                removeBtn.onclick = () => removeFromGroup(team.id, groupName);
+                div.appendChild(removeBtn);
+            } else {
+                // Boutons pour ajouter à une poule
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'team-actions';
+                ['A', 'B', 'C', 'D'].forEach(g => {
+                    if (groups[g].length < 4) {
+                        const btn = document.createElement('button');
+                        btn.type = 'button';
+                        btn.className = 'btn-sm';
+                        btn.textContent = g;
+                        btn.setAttribute('aria-label', `Ajouter ${team.name} à la poule ${g}`);
+                        btn.onclick = () => addToGroup(team.id, g);
+                        actionsDiv.appendChild(btn);
+                    }
+                });
+                div.appendChild(actionsDiv);
+            }
+
+            return div;
+        }
+
+        // Ajouter une équipe à une poule
+        function addToGroup(teamId, groupName) {
+            if (groups[groupName].length >= 4) {
+                alert(`La poule ${groupName} est déjà complète (4 équipes).`);
+                return;
+            }
+            groups[groupName].push(teamId);
+            saveAndRender();
+        }
+
+        // Retirer une équipe d'une poule
+        function removeFromGroup(teamId, groupName) {
+            groups[groupName] = groups[groupName].filter(id => id !== teamId);
+            saveAndRender();
+        }
+
+        // Répartition aléatoire
+        document.getElementById('randomBtn').addEventListener('click', function() {
+            if (!confirm('Voulez-vous répartir les équipes de manière aléatoire ? Cela remplacera la répartition actuelle.')) {
+                return;
+            }
+            
+            // Réinitialiser les poules
+            groups = { A: [], B: [], C: [], D: [] };
+            
+            // Mélanger les équipes
+            const shuffled = [...teams].sort(() => Math.random() - 0.5);
+            
+            // Répartir dans les poules
+            const groupNames = ['A', 'B', 'C', 'D'];
+            shuffled.forEach((team, index) => {
+                const groupIndex = index % 4;
+                groups[groupNames[groupIndex]].push(team.id);
+            });
+            
+            saveAndRender();
+        });
+
+        // Réinitialiser
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (!confirm('Voulez-vous réinitialiser la composition des poules ?')) {
+                return;
+            }
+            groups = { A: [], B: [], C: [], D: [] };
+            saveAndRender();
+        });
+
+        // Sauvegarder et rendre
+        function saveAndRender() {
+            localStorage.setItem('groups', JSON.stringify(groups));
+            renderGroups();
+        }
+
+        // Mettre à jour le bouton Continuer
+        function updateContinueButton() {
+            const continueBtn = document.getElementById('continueBtn');
+            const allAssigned = ['A', 'B', 'C', 'D'].every(g => groups[g].length === 4);
+            continueBtn.disabled = !allAssigned;
+        }
+
+        // Bouton Continuer
+        document.getElementById('continueBtn').addEventListener('click', function() {
+            // Générer les matchs de poules
+            window.location.href = 'matches.html';
+        });
+    </script>
+</body>
+</html>
