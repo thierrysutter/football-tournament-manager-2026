@@ -714,6 +714,105 @@
     /* Annonces live */
     #live-region { position: absolute; left: -9999px; }
 
+
+    /* ═══════════════════════════════════════════
+       FORMULAIRES — Configuration
+    ═══════════════════════════════════════════ */
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-1);
+    }
+
+    .field-label {
+      font-size: var(--text-sm);
+      font-weight: 600;
+      color: var(--color-text);
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .field-required {
+      color: var(--color-error);
+      font-size: var(--text-xs);
+    }
+
+    .field-hint {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted);
+      margin-bottom: var(--space-1);
+    }
+
+    .input-wrap { position: relative; }
+
+    .input {
+      width: 100%;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      background: var(--color-surface-2);
+      color: var(--color-text);
+      font-size: var(--text-base);
+      line-height: 1.5;
+      transition: border-color var(--transition), box-shadow var(--transition);
+      min-height: 44px;
+    }
+
+    .input::placeholder { color: var(--color-text-faint); }
+
+    .input:hover { border-color: var(--color-text-muted); }
+
+    .input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-primary) 20%, transparent);
+    }
+
+    .input.invalid {
+      border-color: var(--color-error);
+    }
+
+    .input.invalid:focus {
+      box-shadow: 0 0 0 3px color-mix(in oklab, var(--color-error) 20%, transparent);
+    }
+
+    .input.valid {
+      border-color: var(--color-success);
+    }
+
+    .input-date { color-scheme: light dark; }
+
+    .field-error {
+      font-size: var(--text-xs);
+      color: var(--color-error);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: var(--space-1);
+    }
+
+    .field-error::before {
+      content: "";
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      background: var(--color-error);
+      mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='8' x2='12' y2='12'/%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'/%3E%3C/svg%3E");
+      -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cline x1='12' y1='8' x2='12' y2='12'/%3E%3Cline x1='12' y1='16' x2='12.01' y2='16'/%3E%3C/svg%3E");
+      mask-size: contain;
+      -webkit-mask-size: contain;
+      mask-repeat: no-repeat;
+      -webkit-mask-repeat: no-repeat;
+      flex-shrink: 0;
+    }
+
+    .field-char-count {
+      font-size: var(--text-xs);
+      color: var(--color-text-faint);
+      text-align: right;
+    }
+
     /* ═══════════════════════════════════════════
        PAGE : DASHBOARD
     ═══════════════════════════════════════════ */
@@ -1016,15 +1115,109 @@
 
     <!-- ── PAGES PLACEHOLDER (à développer) ── -->
     <section class="page" id="page-configuration" aria-labelledby="title-configuration">
-      <div class="page-inner">
+      <div class="page-inner" style="max-width:680px">
         <div class="page-header">
           <h1 class="page-title" id="title-configuration">Configuration</h1>
-          <p class="page-subtitle">Paramètres généraux du tournoi</p>
+          <p class="page-subtitle">Définissez le nom et la date de votre tournoi</p>
         </div>
-        <div class="alert alert-info" role="note">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <div>Cet écran sera développé à l'étape suivante.</div>
-        </div>
+
+        <form id="form-config" novalidate aria-label="Formulaire de configuration du tournoi">
+          <div class="card" style="margin-bottom:var(--space-4)">
+            <h2 class="card-title">
+              <svg class="card-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Identité du tournoi
+            </h2>
+
+            <!-- Nom du tournoi -->
+            <div class="field-group" style="margin-bottom:var(--space-5)">
+              <label class="field-label" for="input-name">
+                Nom du tournoi <span class="field-required" aria-label="obligatoire">*</span>
+              </label>
+              <p class="field-hint" id="hint-name">Ce nom sera affiché sur toutes les vues de l'application.</p>
+              <div class="input-wrap">
+                <input
+                  class="input"
+                  type="text"
+                  id="input-name"
+                  name="tournamentName"
+                  autocomplete="off"
+                  required
+                  maxlength="80"
+                  aria-required="true"
+                  aria-describedby="hint-name error-name"
+                  placeholder="ex : Tournoi Estival 2026"
+                >
+              </div>
+              <div class="field-error" id="error-name" role="alert" aria-live="polite" hidden></div>
+              <div class="field-char-count" id="count-name" aria-live="polite" aria-atomic="true">0 / 80</div>
+            </div>
+
+            <!-- Date du tournoi -->
+            <div class="field-group">
+              <label class="field-label" for="input-date">
+                Date du tournoi <span class="field-required" aria-label="obligatoire">*</span>
+              </label>
+              <p class="field-hint" id="hint-date">Date à laquelle se déroule le tournoi.</p>
+              <div class="input-wrap">
+                <input
+                  class="input input-date"
+                  type="date"
+                  id="input-date"
+                  name="tournamentDate"
+                  required
+                  aria-required="true"
+                  aria-describedby="hint-date error-date"
+                >
+              </div>
+              <div class="field-error" id="error-date" role="alert" aria-live="polite" hidden></div>
+            </div>
+          </div>
+
+          <!-- Récapitulatif format (lecture seule) -->
+          <div class="card" style="margin-bottom:var(--space-6)">
+            <h2 class="card-title">
+              <svg class="card-title-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+              Format du tournoi <span style="font-size:var(--text-xs);font-weight:400;color:var(--color-text-muted);margin-left:var(--space-2)">(fixé en v1)</span>
+            </h2>
+            <dl>
+              <div class="stat-row">
+                <dt class="stat-row-label">Équipes</dt>
+                <dd class="stat-row-value">16</dd>
+              </div>
+              <div class="stat-row">
+                <dt class="stat-row-label">Phase 1</dt>
+                <dd class="stat-row-value">4 poules de 4 — tous contre tous</dd>
+              </div>
+              <div class="stat-row">
+                <dt class="stat-row-label">Phase 2</dt>
+                <dd class="stat-row-value">2 brackets — places 1→8 et 9→16</dd>
+              </div>
+              <div class="stat-row">
+                <dt class="stat-row-label">Total matchs</dt>
+                <dd class="stat-row-value">48</dd>
+              </div>
+              <div class="stat-row">
+                <dt class="stat-row-label">Barème</dt>
+                <dd class="stat-row-value">Victoire 3 pts — Nul 1 pt — Défaite 0 pt</dd>
+              </div>
+            </dl>
+          </div>
+
+          <!-- Actions -->
+          <div style="display:flex;gap:var(--space-3);align-items:center">
+            <button type="submit" class="btn btn-primary" id="btn-save-config">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Enregistrer la configuration
+            </button>
+            <button type="button" class="btn btn-secondary" id="btn-cancel-config">
+              Annuler
+            </button>
+            <div id="config-success" hidden style="display:flex;align-items:center;gap:var(--space-2);font-size:var(--text-sm);color:var(--color-success)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Configuration enregistrée
+            </div>
+          </div>
+        </form>
       </div>
     </section>
     <section class="page" id="page-equipes" aria-labelledby="title-equipes">
@@ -1323,6 +1516,127 @@ function announce(msg) {
   r.textContent = '';
   setTimeout(() => { r.textContent = msg; }, 50);
 }
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   CONFIGURATION — formulaire
+═══════════════════════════════════════════════════════════════════ */
+(function () {
+  const form     = document.getElementById('form-config');
+  const inputName = document.getElementById('input-name');
+  const inputDate = document.getElementById('input-date');
+  const errName  = document.getElementById('error-name');
+  const errDate  = document.getElementById('error-date');
+  const countName = document.getElementById('count-name');
+  const successMsg = document.getElementById('config-success');
+
+  // Pré-remplir si données existantes
+  function prefill() {
+    if (state.tournament.name) inputName.value = state.tournament.name;
+    if (state.tournament.date) inputDate.value = state.tournament.date;
+    updateCharCount();
+  }
+
+  // Compteur de caractères
+  inputName.addEventListener('input', updateCharCount);
+  function updateCharCount() {
+    const len = inputName.value.length;
+    countName.textContent = len + ' / 80';
+    countName.style.color = len > 70 ? 'var(--color-warning)' : 'var(--color-text-faint)';
+  }
+
+  // Validation unitaire
+  function validateName() {
+    const val = inputName.value.trim();
+    if (!val) {
+      showError(inputName, errName, 'Le nom du tournoi est obligatoire.');
+      return false;
+    }
+    if (val.length > 80) {
+      showError(inputName, errName, 'Le nom ne doit pas dépasser 80 caractères.');
+      return false;
+    }
+    clearError(inputName, errName);
+    return true;
+  }
+
+  function validateDate() {
+    const val = inputDate.value;
+    if (!val) {
+      showError(inputDate, errDate, 'La date du tournoi est obligatoire.');
+      return false;
+    }
+    clearError(inputDate, errDate);
+    return true;
+  }
+
+  // Validation à la perte de focus
+  inputName.addEventListener('blur', validateName);
+  inputDate.addEventListener('blur', validateDate);
+
+  // Effacement de l'erreur à la saisie
+  inputName.addEventListener('input', () => { if (inputName.classList.contains('invalid')) validateName(); });
+  inputDate.addEventListener('change', () => { if (inputDate.classList.contains('invalid')) validateDate(); });
+
+  // Soumission
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    successMsg.hidden = true;
+
+    const okName = validateName();
+    const okDate = validateDate();
+
+    if (!okName) { inputName.focus(); return; }
+    if (!okDate) { inputDate.focus(); return; }
+
+    // Sauvegarde dans le state
+    state.tournament.name = inputName.value.trim();
+    state.tournament.date = inputDate.value;
+    if (state.tournament.status === 'NOUVEAU') {
+      state.tournament.status = 'CONFIGURATION';
+    }
+
+    updateDashboard();
+
+    // Feedback visuel
+    successMsg.hidden = false;
+    successMsg.style.display = 'flex';
+    announce('Configuration enregistrée avec succès');
+
+    // Masquer le message après 4s
+    setTimeout(() => { successMsg.hidden = true; }, 4000);
+  });
+
+  // Annuler
+  document.getElementById('btn-cancel-config').addEventListener('click', () => {
+    prefill();
+    clearError(inputName, errName);
+    clearError(inputDate, errDate);
+    successMsg.hidden = true;
+    navigate('dashboard');
+  });
+
+  // Prefill au chargement de la page
+  document.querySelector('[data-page="configuration"]').addEventListener('click', () => {
+    setTimeout(prefill, 0);
+  });
+
+  // Helpers
+  function showError(input, errEl, msg) {
+    input.classList.add('invalid');
+    input.classList.remove('valid');
+    input.setAttribute('aria-invalid', 'true');
+    errEl.textContent = msg;
+    errEl.hidden = false;
+  }
+
+  function clearError(input, errEl) {
+    input.classList.remove('invalid');
+    input.classList.add('valid');
+    input.setAttribute('aria-invalid', 'false');
+    errEl.hidden = true;
+  }
+})();
 
 // Init
 updateDashboard();
