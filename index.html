@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FTM 2026 — Gestionnaire de Tournois</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&display=swap" rel="stylesheet">
+    <style>
+        /* DESIGN TOKENS (Nexus style) */
+        :root, [data-theme="light"] {
+            --color-bg: #f7f6f2;
+            --color-surface: #f9f8f5;
+            --color-surface-2: #fbfbf9;
+            --color-surface-offset: #f0ede8;
+            --color-divider: #dcd9d5;
+            --color-border: #d4d1ca;
+            --color-text: #28251d;
+            --color-text-muted: #6b6965;
+            --color-text-faint: #b0afa9;
+            --color-primary: #01696f;
+            --color-primary-hover: #0c4e54;
+            --color-primary-subtle: #e0eeee;
+            --color-success: #437a22;
+            --color-success-subtle: #e0ecd6;
+            --color-warning: #964219;
+            --color-error: #a12c7b;
+            --color-sidebar-bg: #1e1d1b;
+            --color-sidebar-text: #cdccca;
+            --color-sidebar-muted: #797876;
+            --color-sidebar-active: #4f98a3;
+            --color-sidebar-hover: #2d2c2a;
+            --radius-md: 0.5rem;
+            --radius-lg: 0.75rem;
+            --radius-full: 9999px;
+            --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.06);
+            --sidebar-w: 240px;
+            --topbar-h: 56px;
+            --font-body: 'Inter', system-ui, sans-serif;
+        }
+        [data-theme="dark"] {
+            --color-bg: #171614;
+            --color-surface: #1c1b19;
+            --color-surface-2: #201f1d;
+            --color-divider: #262523;
+            --color-border: #393836;
+            --color-text: #cdccca;
+            --color-text-muted: #797876;
+            --color-text-faint: #5a5957;
+            --color-primary: #4f98a3;
+            --color-primary-subtle: #1a3235;
+            --color-sidebar-bg: #111110;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-body);
+            font-size: 14px;
+            color: var(--color-text);
+            background: var(--color-bg);
+            min-height: 100dvh;
+            line-height: 1.5;
+        }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+        .app-shell { display: grid; grid-template-columns: var(--sidebar-w) 1fr; grid-template-rows: var(--topbar-h) 1fr; min-height: 100dvh; }
+        
+        /* SIDEBAR */
+        .sidebar { grid-row: 1 / -1; background: var(--color-sidebar-bg); color: var(--color-sidebar-text); display: flex; flex-direction: column; position: sticky; top: 0; height: 100dvh; }
+        .sidebar-logo { display: flex; align-items: center; gap: 12px; padding: 0 20px; height: var(--topbar-h); border-bottom: 1px solid #2d2c2a; text-decoration: none; color: inherit; }
+        .sidebar-nav { flex: 1; padding: 16px 12px; list-style: none; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-md); font-weight: 500; text-decoration: none; color: var(--color-sidebar-muted); cursor: pointer; transition: 150ms; width: 100%; border: none; background: none; text-align: left; }
+        .nav-item:hover:not(.disabled) { background: var(--color-sidebar-hover); color: var(--color-sidebar-text); }
+        .nav-item.active { background: rgba(79, 152, 163, 0.15); color: var(--color-sidebar-active); }
+        .nav-item.disabled { opacity: 0.4; cursor: not-allowed; }
+        .nav-badge { margin-left: auto; background: var(--color-primary-subtle); color: var(--color-sidebar-active); font-size: 11px; padding: 2px 6px; border-radius: 10px; }
+
+        /* TOPBAR */
+        .topbar { background: var(--color-surface); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; padding: 0 24px; justify-content: space-between; }
+        .status-badge { display: flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: var(--color-warning-subtle); color: var(--color-warning); }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+
+        /* MAIN CONTENT */
+        .main-content { overflow-y: auto; padding: 40px; }
+        .page { display: none; max-width: 1000px; margin: 0 auto; }
+        .page.active { display: block; }
+        .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: 24px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
+        .page-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+        .page-subtitle { color: var(--color-text-muted); margin-bottom: 32px; }
+
+        /* FORMS */
+        .field { margin-bottom: 20px; }
+        .label { display: block; font-weight: 600; margin-bottom: 6px; }
+        .input { width: 100%; padding: 10px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-md); background: var(--color-surface-2); font-size: 15px; }
+        .input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 3px rgba(1, 105, 111, 0.1); }
+        .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; border-radius: var(--radius-md); font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: 150ms; }
+        .btn-primary { background: var(--color-primary); color: white; }
+        .btn-primary:hover { background: var(--color-primary-hover); }
+        .btn-secondary { background: var(--color-surface); border-color: var(--color-border); color: var(--color-text); }
+        
+        /* TEAMS LIST */
+        .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-top: 24px; }
+        .team-card { display: flex; align-items: center; gap: 12px; padding: 12px; background: var(--color-surface-2); border: 1px solid var(--color-border); border-radius: var(--radius-md); }
+        .team-num { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; background: var(--color-primary-subtle); color: var(--color-primary); border-radius: 50%; font-size: 12px; font-weight: 700; }
+        .team-name { font-weight: 500; flex: 1; }
+        .team-actions { display: flex; gap: 4px; }
+        .btn-small { padding: 4px; border-radius: 4px; color: var(--color-text-muted); }
+        .btn-small:hover { color: var(--color-error); }
+    </style>
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a href="#" class="sidebar-logo" onclick="navigate('dashboard')">
+                <div style="font-weight: 800; color: var(--color-sidebar-active)">FTM 2026</div>
+            </a>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-page="dashboard" onclick="navigate('dashboard')">Dashboard</button>
+                <button class="nav-item" data-page="configuration" onclick="navigate('configuration')">Configuration</button>
+                <div style="font-size: 11px; text-transform: uppercase; color: var(--color-sidebar-muted); margin: 20px 0 8px 12px">Participants</div>
+                <button class="nav-item" data-page="equipes" onclick="navigate('equipes')">
+                    Équipes <span class="nav-badge" id="badge-equipes">0/16</span>
+                </button>
+                <button class="nav-item disabled" data-page="poules">Poules & Tirage</button>
+            </nav>
+        </aside>
+
+        <header class="topbar">
+            <div id="breadcrumb" style="font-weight: 500">Dashboard</div>
+            <div class="status-badge" id="status-badge">
+                <span class="status-dot"></span>
+                <span id="status-label">Initialisation</span>
+            </div>
+        </header>
+
+        <main class="main-content" id="main-content">
+            <!-- DASHBOARD -->
+            <section class="page active" id="page-dashboard">
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Résumé de votre tournoi</p>
+                <div class="card">
+                    <h2 style="margin-bottom: 16px">État du tournoi</h2>
+                    <p id="dash-tourney-name">Aucun tournoi configuré</p>
+                    <p id="dash-tourney-date" style="color: var(--color-text-muted); font-size: 13px"></p>
+                    <div style="margin-top: 20px">
+                        <button class="btn btn-primary" onclick="navigate('configuration')">Configurer</button>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Avancement</h2>
+                    <p style="margin-top: 10px"><span id="dash-teams-count">0</span> / 16 équipes saisies</p>
+                </div>
+            </section>
+
+            <!-- CONFIGURATION -->
+            <section class="page" id="page-configuration">
+                <h1 class="page-title">Configuration</h1>
+                <p class="page-subtitle">Paramètres généraux du tournoi</p>
+                <form class="card" id="form-config">
+                    <div class="field">
+                        <label class="label">Nom du tournoi</label>
+                        <input class="input" id="input-name" required placeholder="ex: Coupe d'Automne">
+                    </div>
+                    <div class="field">
+                        <label class="label">Date du tournoi</label>
+                        <input class="input" type="date" id="input-date" required>
+                    </div>
+                    <div style="display: flex; gap: 12px">
+                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        <span id="config-msg" style="color: var(--color-success); font-weight: 500; display: none">Enregistré !</span>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ÉQUIPES -->
+            <section class="page" id="page-equipes">
+                <h1 class="page-title">Équipes</h1>
+                <p class="page-subtitle">Ajoutez les 16 équipes participantes</p>
+                
+                <div class="card">
+                    <form id="form-add-team" style="display: flex; gap: 12px">
+                        <input class="input" id="input-team-name" placeholder="Nom de l'équipe" required>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+
+                <div class="teams-grid" id="teams-list">
+                    <!-- JS generated -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const state = {
+            tournament: { name: '', date: '', status: 'NOUVEAU' },
+            teams: []
+        };
+
+        function save() {
+            localStorage.setItem('ftm-state', JSON.stringify(state));
+        }
+
+        function load() {
+            const saved = localStorage.getItem('ftm-state');
+            if (saved) {
+                const data = JSON.parse(saved);
+                Object.assign(state, data);
+            }
+        }
+
+        function navigate(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            
+            const page = document.getElementById('page-' + pageId);
+            if (page) page.classList.add('active');
+            
+            const nav = document.querySelector(`[data-page="${pageId}"]`);
+            if (nav) nav.classList.add('active');
+
+            document.getElementById('breadcrumb').textContent = pageId.charAt(0).toUpperCase() + pageId.slice(1);
+            
+            if (pageId === 'dashboard') updateDashboard();
+            if (pageId === 'configuration') prefillConfig();
+            if (pageId === 'equipes') renderTeams();
+        }
+
+        function updateDashboard() {
+            document.getElementById('dash-tourney-name').textContent = state.tournament.name || 'Aucun tournoi configuré';
+            document.getElementById('dash-tourney-date').textContent = state.tournament.date || '';
+            document.getElementById('dash-teams-count').textContent = state.teams.length;
+            document.getElementById('badge-equipes').textContent = state.teams.length + '/16';
+        }
+
+        function prefillConfig() {
+            document.getElementById('input-name').value = state.tournament.name;
+            document.getElementById('input-date').value = state.tournament.date;
+        }
+
+        document.getElementById('form-config').onsubmit = (e) => {
+            e.preventDefault();
+            state.tournament.name = document.getElementById('input-name').value;
+            state.tournament.date = document.getElementById('input-date').value;
+            state.tournament.status = 'CONFIGURÉ';
+            save();
+            const msg = document.getElementById('config-msg');
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 2000);
+            updateDashboard();
+        };
+
+        document.getElementById('form-add-team').onsubmit = (e) => {
+            e.preventDefault();
+            if (state.teams.length >= 16) {
+                alert('Maximum 16 équipes');
+                return;
+            }
+            const name = document.getElementById('input-team-name').value;
+            state.teams.push({ id: Date.now(), name });
+            document.getElementById('input-team-name').value = '';
+            save();
+            renderTeams();
+            updateDashboard();
+        };
+
+        function renderTeams() {
+            const list = document.getElementById('teams-list');
+            list.innerHTML = '';
+            state.teams.forEach((team, index) => {
+                const div = document.createElement('div');
+                div.className = 'team-card';
+                div.innerHTML = `
+                    <span class="team-num">${index + 1}</span>
+                    <span class="team-name">${team.name}</span>
+                    <button class="btn-small" onclick="deleteTeam(${team.id})">✕</button>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        window.deleteTeam = (id) => {
+            state.teams = state.teams.filter(t => t.id !== id);
+            save();
+            renderTeams();
+            updateDashboard();
+        };
+
+        load();
+        updateDashboard();
+    </script>
+</body>
+</html>
