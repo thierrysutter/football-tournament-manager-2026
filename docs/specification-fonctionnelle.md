@@ -1,9 +1,9 @@
 # Spécification Fonctionnelle — Gestionnaire de Tournois de Football
 
-> **Version** : 0.2  
+> **Version** : 0.3  
 > **Date** : 04 avril 2026  
 > **Auteur** : Utilisateur (usage personnel)  
-> **Statut** : Points ouverts résolus — Prêt pour développement
+> **Statut** : Prêt pour maquettage et développement
 
 ---
 
@@ -17,7 +17,15 @@ L'application est un **outil de gestion de tournois de football** à usage perso
 
 - **Unique utilisateur** : l'organisateur du tournoi (pas de gestion multi-utilisateurs, pas d'authentification dans un premier temps)
 
-### 1.3 Périmètre v1
+### 1.3 Orientation UI
+
+- Interface **sobre et professionnelle**
+- Priorité à la **clarté de l'information** et à la lisibilité
+- Hiérarchie visuelle simple et maîtrisée
+- Densité d'information adaptée à un usage desktop
+- Aucune dépendance à des effets visuels pour comprendre l'information
+
+### 1.4 Périmètre v1
 
 | Inclus | Exclu (hors périmètre v1) |
 |--------|--------------------------|
@@ -25,10 +33,9 @@ L'application est un **outil de gestion de tournois de football** à usage perso
 | Génération automatique des matchs | Gestion des arbitres |
 | Saisie des résultats | Notifications / partage public |
 | Classements de poules | Multi-tournois simultanés |
-| Brackets phase finale | Authentification |
+| Brackets phase finale complets | Authentification |
 | Classement final places 1 à 16 | Application mobile native |
-| | Planning horaire des matchs |
-| | Export / Import des données (v2) |
+| Export JSON des données | Planning horaire des matchs |
 
 ---
 
@@ -97,9 +104,9 @@ Le classement est établi selon les critères suivants, **dans l'ordre de priori
 | 5 | **Buts encaissés** | Total de buts encaissés (le moins est le mieux) |
 | 6 | **Tirs au but** | Saisie manuelle par l'organisateur du résultat de la séance |
 
-> **Règle de gestion — Tirs au but (critère 6)** : lorsque deux équipes sont à parfaite égalité sur les critères 1 à 5, l'application affiche un champ de saisie dédié pour le résultat de la séance de tirs au but (ex. : 4 − 3). Ce champ n'apparaît que lorsque nécessaire. Le vainqueur est classé devant, sans modification des statistiques de buts.
+> **Règle — Tirs au but (critère 6)** : lorsque deux équipes sont à parfaite égalité sur les critères 1 à 5, l'application affiche un champ de saisie dédié pour le résultat de la séance de tirs au but (ex. : 4 − 3). Ce champ n'apparaît que lorsque nécessaire. Le vainqueur est classé devant, sans modification des statistiques de buts.
 
-> **Règle de gestion — Égalité à 3 équipes** : si trois équipes ou plus sont à égalité de points, les critères 2 à 6 s'appliquent en considérant uniquement les matchs entre ces équipes (sous-classement) avant de revenir aux statistiques générales.
+> **Règle — Égalité à 3 équipes ou plus** : si trois équipes ou plus sont à égalité de points, les critères 2 à 6 s'appliquent d'abord en considérant **uniquement les matchs joués entre ces équipes** (sous-classement), avant de revenir aux statistiques générales sur l'ensemble de la poule.
 
 #### 2.2.3 Qualification pour la Phase 2
 
@@ -112,47 +119,46 @@ Le classement est établi selon les critères suivants, **dans l'ordre de priori
 
 ---
 
-### 2.3 Phase 2 — Brackets de Classement
+### 2.3 Phase 2 — Brackets de Classement Complets
 
 #### 2.3.1 Principe général
 
-Chaque bracket classe **toutes ses équipes de la 1re à la 8e place locale** (soit places 1-8 et 9-16 au global). Les perdants de chaque tour continuent à jouer entre eux pour déterminer leur classement exact — aucune équipe n'est éliminée sans être classée.
+Chaque bracket classe **toutes ses équipes** du 1er au 8e rang local. Les perdants de chaque tour continuent à jouer pour déterminer leur classement exact — aucune équipe n'est éliminée sans être classée.
 
 #### 2.3.2 Structure d'un bracket (8 équipes → 12 matchs)
 
 ```
-QUARTS DE FINALE         DEMI-FINALES             FINALES DE CLASSEMENT
-                                               
-Eq1 ─┐                                         
-     ├─ V12 ──┐                                
-Eq2 ─┘        │                               
-              ├── V12vsV34 ──► Match 1re/2e place
-Eq3 ─┐        │                               
-     ├─ V34 ──┘                               
-Eq4 ─┘                                        
-                                               
-Eq5 ─┐                                        
-     ├─ V56 ──┐                               
-Eq6 ─┘        │                               
-              ├── V56vsV78 ──► Match 3e/4e place
-Eq7 ─┐        │                               
-     ├─ V78 ──┘                               
-Eq8 ─┘                                        
-                                               
-Perdants QF → 4 matchs → 4 demi-finales perdants → Match 5e/6e + Match 7e/8e
+QUARTS DE FINALE      DEMI-FINALES          FINALES DE CLASSEMENT
+                                          
+Eq1 ─┐               
+     ├─ V12 ──┐      
+Eq2 ─┘        ├──────────────────────► Finale 1re/2e place
+Eq3 ─┐        │      
+     ├─ V34 ──┘      
+Eq4 ─┘               
+
+Eq5 ─┐               
+     ├─ V56 ──┐      
+Eq6 ─┘        ├──────────────────────► Finale 3e/4e place
+Eq7 ─┐        │      
+     ├─ V78 ──┘      
+Eq8 ─┘               
+
+Perdants QF1 vs QF2 ──────────────────► Finale 5e/6e place
+Perdants QF3 vs QF4 ──────────────────► Finale 7e/8e place
 ```
 
 **Détail des 12 matchs par bracket :**
 
-| Tour | Matchs | Détermine |
-|------|--------|-----------|
-| Quarts de finale | 4 matchs | Qualifiés pour le top 4 et le bas de tableau |
-| Demi-finales vainqueurs | 2 matchs | Finalistes 1re/2e et 3e/4e |
-| Demi-finales perdants QF | 2 matchs | Finalistes 5e/6e et 7e/8e |
-| Finale 1re/2e place | 1 match | 🥇 1er et 🥈 2e |
-| Finale 3e/4e place | 1 match | 🥉 3e et 4e |
-| Finale 5e/6e place | 1 match | 5e et 6e |
-| Finale 7e/8e place | 1 match | 7e et 8e |
+| Tour | Nb matchs | Places déterminées |
+|------|-----------|--------------------|
+| Quarts de finale | 4 | Qualifiés top 4 / bas de tableau |
+| Demi-finales vainqueurs | 2 | Finalistes 1re/2e et 3e/4e |
+| Demi-finales perdants | 2 | Finalistes 5e/6e et 7e/8e |
+| Finale 1re/2e place | 1 | 🥇 1er et 🥈 2e |
+| Finale 3e/4e place | 1 | 🥉 3e et 4e |
+| Finale 5e/6e place | 1 | 5e et 6e |
+| Finale 7e/8e place | 1 | 7e et 8e |
 
 #### 2.3.3 Constitution des brackets — Croisement des poules
 
@@ -178,9 +184,8 @@ Perdants QF → 4 matchs → 4 demi-finales perdants → Match 5e/6e + Match 7e/
 
 #### 2.3.4 Gestion des matchs nuls en Phase 2
 
-- En phase d'élimination directe, un match nul à l'issue du temps réglementaire est possible.
-- L'application **n'impose pas de prolongation** — l'organisateur saisit directement le score final incluant le cas échéant le résultat après tirs au but.
-- **Contrainte de validation** : le score doit impérativement désigner un vainqueur (scores différents). Un score nul est bloqué à la validation.
+- L'organisateur saisit directement le score final (incluant le résultat des tirs au but si nécessaire, géré hors application).
+- **Contrainte de validation** : un score nul est bloqué — un vainqueur doit impérativement être désigné pour valider le match.
 
 ---
 
@@ -189,8 +194,8 @@ Perdants QF → 4 matchs → 4 demi-finales perdants → Match 5e/6e + Match 7e/
 | Phase | Matchs | Détail |
 |-------|--------|--------|
 | Phase 1 — Poules | 24 | 6 matchs × 4 poules |
-| Phase 2 — Tableau Principal | 12 | 4 QF + 2 DF vainqueurs + 2 DF perdants + 4 finales de classement |
-| Phase 2 — Tableau Consolant | 12 | 4 QF + 2 DF vainqueurs + 2 DF perdants + 4 finales de classement |
+| Phase 2 — Tableau Principal | 12 | 4 QF + 2 DF vainqueurs + 2 DF perdants + 4 finales classement |
+| Phase 2 — Tableau Consolant | 12 | 4 QF + 2 DF vainqueurs + 2 DF perdants + 4 finales classement |
 | **TOTAL** | **48** | |
 
 ---
@@ -239,8 +244,8 @@ L'utilisateur peut :
 
 ### 4.4 Génération des Rencontres
 
-- Les **24 matchs de Phase 1** sont générés automatiquement à la validation du tirage
-- Les **24 matchs de Phase 2** sont générés après clôture manuelle de la Phase 1 (tous les matchs saisis)
+- Les **24 matchs de Phase 1** sont générés automatiquement à la validation du tirage.
+- Les **24 matchs de Phase 2** sont générés manuellement par l'organisateur une fois tous les matchs de Phase 1 saisis.
 
 ### 4.5 Saisie des Résultats
 
@@ -255,23 +260,29 @@ L'utilisateur peut :
 |-------|--------|
 | Scores négatifs | Interdits |
 | Score nul en Phase 2 | Bloqué — un vainqueur doit être désigné |
-| Tirs au but en poule | Champ supplémentaire affiché si critères 1-5 à égalité |
+| Tirs au but en poule | Champ supplémentaire si critères 1-5 à parfaite égalité |
 | Recalcul | Toute modification recalcule classements et qualifications |
-| Accès Phase 2 | Matchs de Phase 2 accessibles uniquement après génération du bracket |
+| Accès Phase 2 | Matchs accessibles uniquement après génération du bracket |
 
 ### 4.6 Suivi et Classements
 
 **Phase 1 :**
-- 4 tableaux de classement de poules : Points, J / V / N / D, BP / BC / Diff
+- 4 tableaux de classement : Points, J / V / N / D, BP / BC / Diff
 - Statut de chaque match (à jouer / joué)
 - Qualifiés mis en évidence dès que la poule est complète
 
 **Phase 2 :**
-- Bracket visuel du Tableau Principal avec avancement en temps réel
-- Bracket visuel du Tableau Consolant avec avancement en temps réel
+- Bracket visuel du Tableau Principal avec progression en temps réel
+- Bracket visuel du Tableau Consolant avec progression en temps réel
 
 **Classement final :**
 - Classement général de la 1re à la 16e place à l'issue de tous les matchs
+
+### 4.7 Export des Données (v1)
+
+- Export de l'ensemble des données du tournoi au format **JSON**
+- Import d'un fichier JSON pour recharger un tournoi précédemment exporté
+- Le fichier exporté contient : configuration, équipes, poules, matchs, résultats, classements
 
 ---
 
@@ -283,9 +294,9 @@ L'utilisateur peut :
 ┌─────────────────────────────────┐
 │  Dashboard (accueil)            │  ← Vue d'ensemble, statut, progression
 ├─────────────────────────────────┤
-│  Configuration                  │  ← Nom, date
+│  Configuration                  │  ← Nom, date du tournoi
 ├─────────────────────────────────┤
-│  Équipes                        │  ← Liste, ajout, modification
+│  Équipes                        │  ← Liste, ajout, modification, suppression
 ├─────────────────────────────────┤
 │  Poules & Tirage                │  ← Affectation des équipes aux poules
 ├─────────────────────────────────┤
@@ -318,15 +329,28 @@ Chaque état détermine les actions disponibles et verrouille les sections préc
 
 ### 6.1 Entités principales
 
-**Tournoi** : nom, date, statut
+**Tournoi** : nom, date, statut, horodatage création/modification
 
-**Équipe** : nom, poule affectée
+**Équipe** : identifiant unique, nom, poule affectée
 
 **Poule** : identifiant (A/B/C/D), liste des équipes
 
-**Match** : phase, poule/tour, équipe 1, équipe 2, score 1, score 2, score TAB 1, score TAB 2 (tirs au but si besoin), statut
+**Match** : phase (1 ou 2), poule/tour, équipe 1, équipe 2, score 1, score 2, score tirs au but 1, score tirs au but 2, statut (à jouer / joué)
 
-**Classement de poule** *(calculé)* : points, J/V/N/D, buts pour, buts contre, différence de buts
+**Classement de poule** *(calculé)* : points, matchs joués, victoires, nuls, défaites, buts pour, buts contre, différence de buts
+
+### 6.2 Format d'export JSON
+
+```json
+{
+  "version": "1.0",
+  "exportedAt": "2026-04-04T18:00:00Z",
+  "tournament": { "name": "", "date": "", "status": "" },
+  "teams": [],
+  "groups": [],
+  "matches": []
+}
+```
 
 ---
 
@@ -334,22 +358,92 @@ Chaque état détermine les actions disponibles et verrouille les sections préc
 
 | Contrainte | Détail |
 |------------|--------|
-| Type | Site web statique — mono-fichier HTML/CSS/JS |
-| Stockage | En mémoire (session) — pas de base de données |
-| Persistance | Données perdues au rechargement (export JSON prévu en v2) |
+| Type | Site web statique — mono-fichier HTML / CSS / JS |
+| Stockage | En mémoire (session) + export/import JSON |
+| Persistance | Export JSON manuel pour sauvegarder et recharger |
 | Compatibilité | Navigateur desktop moderne (Chrome, Firefox, Edge) |
-| Responsive | Desktop prioritaire |
+| Responsive | Desktop prioritaire — adaptation mobile en meilleur effort |
 | Dépendances | Aucun serveur — 100% client-side |
 
 ---
 
-## 8. Points Ouverts Résiduels
+## 8. Exigences d'Accessibilité et de Conformité (RGAA)
 
-| # | Question | Impact |
-|---|----------|--------|
-| 1 | Critère de départage à 3 équipes ou plus : confirmer l'application du sous-classement (confrontations directes entre les équipes concernées uniquement) | Logique de classement |
-| 2 | Export / import JSON des données : v1 ou v2 ? | Architecture |
+L'application est conçue selon une approche **"accessibility by design"** et vise un haut niveau de conformité au **RGAA 4.x** (Référentiel Général d'Amélioration de l'Accessibilité), référentiel officiel français organisé en 13 thématiques et 106 critères.
+
+### 8.1 Principes généraux
+
+- Accessibilité prise en compte **dès la conception** des écrans, composants et interactions
+- Interface sobre, professionnelle et lisible, sans effet visuel porteur d'information
+- Information jamais transmise **uniquement par la couleur**
+
+### 8.2 Exigences structurelles
+
+| Exigence | Détail |
+|----------|--------|
+| HTML sémantique | Balises `<header>`, `<nav>`, `<main>`, `<section>`, `<article>`, `<footer>` utilisées correctement |
+| Hiérarchie des titres | Un seul `<h1>` par page, niveaux `<h2>`→`<h3>` sans saut |
+| Validité HTML | Code valide, identifiants `id` uniques, balises correctement fermées |
+| Langue | Attribut `lang="fr"` sur la balise `<html>` |
+| Titre de page | Balise `<title>` descriptive et unique par vue |
+
+### 8.3 Exigences de navigation
+
+| Exigence | Détail |
+|----------|--------|
+| Navigation clavier | Tous les éléments interactifs accessibles via Tab / Entrée / Espace / Échap |
+| Focus visible | Indicateur de focus visible sur tous les éléments interactifs |
+| Lien d'évitement | Lien "Aller au contenu principal" comme premier élément focusable |
+| Ordre de tabulation | Ordre logique et cohérent avec la disposition visuelle |
+
+### 8.4 Exigences visuelles et de contraste
+
+| Exigence | Ratio minimum |
+|----------|--------------|
+| Texte courant (< 18px normal ou < 14px gras) | 4,5 : 1 |
+| Grand texte (≥ 18px normal ou ≥ 14px gras) | 3 : 1 |
+| Composants UI et éléments graphiques informatifs | 3 : 1 |
+| Texte sur fond coloré (boutons, badges) | 4,5 : 1 |
+
+### 8.5 Exigences formulaires et interactions
+
+| Exigence | Détail |
+|----------|--------|
+| Labels | Chaque `<input>` associé à un `<label>` explicite |
+| Messages d'erreur | Textuels, spécifiques, proches du champ concerné |
+| État des composants | États actif, désactivé, invalide, requis annoncés programmatiquement |
+| Annonces dynamiques | Changements importants annoncés via `aria-live` (ex : "Résultat enregistré", "Phase 2 générée") |
+| Groupes de champs | `<fieldset>` / `<legend>` pour les groupes de contrôles liés |
+
+### 8.6 Exigences médias et composants riches
+
+| Exigence | Détail |
+|----------|--------|
+| Images décoratives | `alt=""` |
+| Images informatives | `alt` descriptif |
+| Icônes seules | `aria-label` ou texte caché `.sr-only` |
+| Tableaux de données | En-têtes `<th>` avec attribut `scope`, légende `<caption>` |
+| Brackets (composants custom) | Navigation clavier, rôles ARIA appropriés |
+
+### 8.7 Recette accessibilité minimale avant livraison
+
+- [ ] Navigation clavier complète sur tous les écrans
+- [ ] Vérification des ratios de contraste (outil : Colour Contrast Analyser ou browser DevTools)
+- [ ] Vérification de la hiérarchie des titres
+- [ ] Vérification des labels de formulaires et messages d'erreur
+- [ ] Vérification des annonces `aria-live`
+- [ ] Vérification responsive (zoom 200%, 400%)
+- [ ] Validation HTML (Nu Html Checker)
 
 ---
 
-*Version 0.2 — Tous les points majeurs sont résolus. Prêt pour la phase de développement.*
+## 9. Points Ouverts Résiduels
+
+| # | Question | Impact | Priorité |
+|---|----------|--------|----------|
+| 1 | Design visuel exact : palette de couleurs, typographie — à valider sur maquette | UI | Avant développement |
+| 2 | Comportement à la perte de données (rechargement sans export) : avertissement ? | UX | À définir en dev |
+
+---
+
+*Version 0.3 — Spécification complète. Prêt pour le développement écran par écran.*
