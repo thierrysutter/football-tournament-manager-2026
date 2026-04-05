@@ -1,9 +1,10 @@
 # Spécification Fonctionnelle — Gestionnaire de Tournois de Football
 
-> **Version** : 0.3  
-> **Date** : 04 avril 2026  
+> **Version** : 0.5  
+> **Date** : 05 avril 2026  
 > **Auteur** : Utilisateur (usage personnel)  
-> **Statut** : Prêt pour maquettage et développement
+> **Statut** : Prêt pour maquettage et développement  
+> **Changelog v0.5** : Précisions Phase 2 — gestion des tirs au but sur score nul, ajout du workflow de validation de la Phase 2, génération du classement final, clôture du tournoi (consultation seule).
 
 ---
 
@@ -11,7 +12,7 @@
 
 ### 1.1 Présentation
 
-L'application est un **outil de gestion de tournois de football** à usage personnel. Elle permet de configurer un tournoi, d'enregistrer les équipes participantes, de générer automatiquement les rencontres, de saisir les résultats et de suivre l'avancement jusqu'au classement final.
+L'application est un **outil de gestion de tournois de football** à usage personnel. Elle permet de créer et gérer **plusieurs tournois indépendants**, d'enregistrer les équipes participantes, de générer automatiquement les rencontres, de saisir les résultats et de suivre l'avancement jusqu'au classement final.
 
 ### 1.2 Utilisateurs cibles
 
@@ -29,13 +30,14 @@ L'application est un **outil de gestion de tournois de football** à usage perso
 
 | Inclus | Exclu (hors périmètre v1) |
 |--------|--------------------------|
-| Gestion des équipes | Gestion des joueurs individuels |
-| Génération automatique des matchs | Gestion des arbitres |
-| Saisie des résultats | Notifications / partage public |
-| Classements de poules | Multi-tournois simultanés |
-| Brackets phase finale complets | Authentification |
-| Classement final places 1 à 16 | Application mobile native |
-| Export JSON des données | Planning horaire des matchs |
+| Gestion multi-tournois | Gestion des joueurs individuels |
+| Gestion des équipes | Gestion des arbitres |
+| Génération automatique des matchs | Notifications / partage public |
+| Classements de poules | Authentification |
+| Brackets phase finale complets | Application mobile native |
+| Classement final places 1 à 16 | Planning horaire des matchs |
+| Export JSON des données | |
+| Validation de phase avec verrouillage | |
 
 ---
 
@@ -43,10 +45,10 @@ L'application est un **outil de gestion de tournois de football** à usage perso
 
 ### 2.1 Vue d'ensemble
 
-Le tournoi se déroule en **2 phases distinctes** pour **16 équipes** :
+Le tournoi se déroule en **2 phases distinctes** pour **N équipes** (16 par défaut) :
 
 ```
-16 équipes
+N équipes (16 par défaut)
     │
     ▼
 ┌─────────────────────────────────┐
@@ -54,7 +56,7 @@ Le tournoi se déroule en **2 phases distinctes** pour **16 équipes** :
 │  4 poules de 4 équipes          │
 │  24 matchs au total             │
 └────────────────┬────────────────┘
-                 │
+                 │  ← Validation obligatoire avant Phase 2
         ┌────────┴────────┐
         ▼                 ▼
 ┌──────────────────┐  ┌──────────────────┐
@@ -75,7 +77,7 @@ Le tournoi se déroule en **2 phases distinctes** pour **16 équipes** :
 
 | Paramètre | Valeur |
 |-----------|--------|
-| Nombre d'équipes | 16 |
+| Nombre d'équipes | 16 (paramétrable à la création) |
 | Nombre de poules | 4 (Poule A, B, C, D) |
 | Équipes par poule | 4 |
 | Format | Tous contre tous (round-robin) |
@@ -129,7 +131,7 @@ Chaque bracket classe **toutes ses équipes** du 1er au 8e rang local. Les perda
 
 ```
 QUARTS DE FINALE      DEMI-FINALES          FINALES DE CLASSEMENT
-                                          
+
 Eq1 ─┐               
      ├─ V12 ──┐      
 Eq2 ─┘        ├──────────────────────► Finale 1re/2e place
@@ -151,7 +153,7 @@ Perdants QF3 vs QF4 ──────────────────► Fi
 **Détail des 12 matchs par bracket :**
 
 | Tour | Nb matchs | Places déterminées |
-|------|-----------|--------------------|
+|------|-----------|-------------------|
 | Quarts de finale | 4 | Qualifiés top 4 / bas de tableau |
 | Demi-finales vainqueurs | 2 | Finalistes 1re/2e et 3e/4e |
 | Demi-finales perdants | 2 | Finalistes 5e/6e et 7e/8e |
@@ -184,8 +186,17 @@ Perdants QF3 vs QF4 ──────────────────► Fi
 
 #### 2.3.4 Gestion des matchs nuls en Phase 2
 
-- L'organisateur saisit directement le score final (incluant le résultat des tirs au but si nécessaire, géré hors application).
-- **Contrainte de validation** : un score nul est bloqué — un vainqueur doit impérativement être désigné pour valider le match.
+En Phase 2, chaque match doit obligatoirement désigner un vainqueur. Si le score à la fin du temps réglementaire est nul, l'application propose la saisie du résultat de la séance de tirs au but :
+
+| Situation | Comportement |
+|-----------|-------------|
+| Score différent (ex. : 2-1) | Match validé directement — vainqueur désigné |
+| Score nul (ex. : 1-1 ou 0-0) | Champ tirs au but affiché — obligatoire avant validation |
+| Tirs au but | L'utilisateur sélectionne ou saisit l'équipe gagnante (ex. : « Équipe A remporte les TAB ») |
+
+> **Règle** : le score au tableau affiche le résultat du temps réglementaire (ex. : 1-1 TAB). Le vainqueur des tirs au but est enregistré séparément et utilisé pour la progression dans le bracket. Les statistiques de buts ne sont pas affectées par les tirs au but.
+>
+> **Contrainte de validation** : un match ne peut pas être validé si le score est nul et qu'aucun vainqueur des tirs au but n'a été désigné.
 
 ---
 
@@ -202,37 +213,86 @@ Perdants QF3 vs QF4 ──────────────────► Fi
 
 ## 4. Fonctionnalités de l'Application
 
-### 4.1 Configuration du Tournoi
+### 4.1 Gestion Multi-Tournois
+
+L'application permet de gérer **plusieurs tournois indépendants**. L'écran d'accueil présente la liste de tous les tournois créés avec leur statut et les principales informations.
 
 L'utilisateur peut :
-- Définir le **nom du tournoi**
-- Définir la **date** du tournoi
-- Consulter un récapitulatif de la configuration avant démarrage
+- **Créer** un nouveau tournoi
+- **Ouvrir** un tournoi existant pour le consulter ou le modifier
+- **Supprimer** un tournoi (avec confirmation)
+- Voir d'un coup d'œil l'état d'avancement de chaque tournoi
 
-> 💡 **Évolution future** : rendre le nombre d'équipes et de poules paramétrable.
-
-### 4.2 Gestion des Équipes
-
-L'utilisateur peut :
-- **Ajouter** une équipe (nom obligatoire)
-- **Modifier** le nom d'une équipe
-- **Supprimer** une équipe (uniquement si le tournoi n'a pas encore démarré)
-- Visualiser la liste des 16 équipes avec leur poule d'affectation
-
-#### Règles de gestion — Équipes
+#### Règles de gestion — Multi-tournois
 
 | Règle | Détail |
 |-------|--------|
-| Nombre requis | Exactement 16 équipes pour démarrer |
-| Unicité | Deux équipes ne peuvent pas avoir le même nom |
-| Suppression | Interdite après le démarrage du tournoi |
+| Indépendance | Chaque tournoi possède ses propres équipes, poules, matchs et résultats |
+| Nombre | Aucune limite sur le nombre de tournois créés |
+| Suppression | Une confirmation est demandée avant suppression — opération irréversible |
 
-### 4.3 Tirage au Sort / Affectation des Poules
+---
+
+### 4.2 Création d'un Tournoi
+
+À la création d'un tournoi, l'utilisateur doit renseigner les informations suivantes :
+
+| Champ | Obligatoire | Valeur par défaut | Description |
+|-------|-------------|-------------------|-------------|
+| Nom du tournoi | ✅ Oui | — | Nom libre, doit être unique |
+| Date du tournoi | ✅ Oui | — | Date au format JJ/MM/AAAA |
+| Lieu du tournoi | ✅ Oui | — | Nom du lieu ou ville |
+| Nombre d'équipes | ✅ Oui | **16** | Nombre entier pair ≥ 4 |
+
+> 💡 Le nombre d'équipes est fixé à la création et ne peut plus être modifié une fois le tournoi créé. La valeur par défaut est **16 équipes**.
+
+#### Règles de validation à la création
+
+| Règle | Détail |
+|-------|--------|
+| Nom unique | Deux tournois ne peuvent pas avoir le même nom |
+| Tous champs requis | La création est impossible tant qu'un champ obligatoire est vide |
+| Format date | La date doit être valide (format JJ/MM/AAAA) |
+
+---
+
+### 4.3 Gestion des Équipes
+
+Après la création du tournoi, l'utilisateur procède à l'inscription des équipes participantes. Cette étape est préalable à toute génération des poules.
+
+L'utilisateur peut :
+- **Ajouter** une équipe (nom obligatoire, unique au sein du tournoi)
+- **Modifier** le nom d'une équipe
+- **Supprimer** une équipe (selon les règles ci-dessous)
+
+#### Règles de gestion — Équipes (tableau complet)
+
+| Situation | Ajout | Suppression | Règle |
+|-----------|-------|-------------|-------|
+| Nombre d'équipes non atteint | ✅ Autorisé | ✅ Autorisée | Saisie en cours |
+| Nombre d'équipes atteint, poules non générées | ❌ Bloqué | ✅ Autorisée | Liste complète mais non verrouillée |
+| Poules générées, Phase 1 non démarrée | ❌ Bloqué | ⚠️ Avec réinitialisation (voir ci-dessous) | Suppression entraîne reset total des poules |
+| Phase 1 en cours ou validée | ❌ Bloqué | ❌ Interdite | Tournoi en cours |
+
+> **Règle — Suppression après génération des poules** : si l'utilisateur tente de supprimer une équipe après que les poules ont été générées, l'application affiche un message d'avertissement clair :
+>
+> *« La suppression de cette équipe entraînera la réinitialisation complète des poules et la suppression de tous les matchs déjà enregistrés. Cette action est irréversible. Confirmer ? »*
+>
+> L'utilisateur doit **confirmer explicitement** avant que l'opération soit exécutée. En cas de confirmation, toutes les poules et tous les résultats de Phase 1 sont supprimés et le tournoi repasse à l'état `ÉQUIPES_EN_COURS`.
+
+#### Pré-requis pour passer à la génération des poules
+
+- Le nombre d'équipes inscrites doit être **exactement égal** au nombre d'équipes défini à la création du tournoi.
+- Tant que ce nombre n'est pas atteint, le bouton « Générer les poules » reste **désactivé** avec un indicateur du nombre d'équipes manquantes (ex. : *« 3 équipes manquantes »*).
+
+---
+
+### 4.4 Tirage au Sort / Affectation des Poules
 
 L'utilisateur peut :
 - Lancer un **tirage au sort automatique** (répartition aléatoire en 4 poules de 4)
 - Ou affecter **manuellement** chaque équipe à une poule
-- **Relancer** le tirage tant que le tournoi n'a pas démarré
+- **Relancer** le tirage tant que la Phase 1 n'a pas démarré
 
 #### Règles de gestion — Tirage
 
@@ -240,33 +300,45 @@ L'utilisateur peut :
 |-------|--------|
 | Équilibre | Chaque poule doit contenir exactement 4 équipes |
 | Unicité | Une équipe ne peut appartenir qu'à une seule poule |
-| Verrouillage | Le tirage est figé dès la saisie du premier résultat de Phase 1 |
+| Verrouillage | Le tirage est figé dès la validation de la Phase 1 |
 
-### 4.4 Génération des Rencontres
+---
+
+### 4.5 Génération des Rencontres
 
 - Les **24 matchs de Phase 1** sont générés automatiquement à la validation du tirage.
-- Les **24 matchs de Phase 2** sont générés manuellement par l'organisateur une fois tous les matchs de Phase 1 saisis.
+- Les **24 matchs de Phase 2** sont générés automatiquement après la **validation de la Phase 1** par l'utilisateur.
 
-### 4.5 Saisie des Résultats
+---
+
+### 4.6 Saisie des Résultats
 
 L'utilisateur peut :
 - Saisir le **score** d'un match (buts équipe 1 / buts équipe 2)
-- **Modifier** un résultat déjà saisi (recalcul automatique)
-- **Effacer** un résultat (le match repasse à "à jouer")
+- **Modifier** un résultat déjà saisi (recalcul automatique des classements)
+- **Effacer** un résultat (le match repasse à « à jouer »)
+
+> ⚠️ La modification et l'effacement d'un résultat de Phase 1 sont **interdits après la validation de la Phase 1**.
 
 #### Règles de gestion — Résultats
 
 | Règle | Détail |
 |-------|--------|
 | Scores négatifs | Interdits |
-| Score nul en Phase 2 | Bloqué — un vainqueur doit être désigné |
+| Score nul en Phase 2 | Champ tirs au but obligatoire — un vainqueur doit être désigné avant de valider le match |
 | Tirs au but en poule | Champ supplémentaire si critères 1-5 à parfaite égalité |
-| Recalcul | Toute modification recalcule classements et qualifications |
-| Accès Phase 2 | Matchs accessibles uniquement après génération du bracket |
+| Tirs au but en Phase 2 | Champ affiché automatiquement si score nul — l'équipe gagnante est sélectionnée par l'utilisateur |
+| Recalcul Phase 1 | Toute saisie ou modification recalcule immédiatement classements et qualifications |
+| Accès Phase 2 | Matchs accessibles uniquement après validation de la Phase 1 |
+| Verrouillage Phase 1 | Après validation, aucun score de Phase 1 ne peut être modifié ou effacé |
+| Verrouillage Phase 2 | Après validation de la Phase 2, aucun score ne peut être modifié ou effacé |
 
-### 4.6 Suivi et Classements
+---
+
+### 4.7 Classements et Suivi
 
 **Phase 1 :**
+- Classements de poule mis à jour **en temps réel** à chaque saisie de résultat
 - 4 tableaux de classement : Points, J / V / N / D, BP / BC / Diff
 - Statut de chaque match (à jouer / joué)
 - Qualifiés mis en évidence dès que la poule est complète
@@ -275,10 +347,70 @@ L'utilisateur peut :
 - Bracket visuel du Tableau Principal avec progression en temps réel
 - Bracket visuel du Tableau Consolant avec progression en temps réel
 
-**Classement final :**
-- Classement général de la 1re à la 16e place à l'issue de tous les matchs
+**Classement final** *(généré à la clôture du tournoi)* :
+- Classement général de la 1re à la 16e place, accessible dans un écran dédié après validation de la Phase 2
+- Affiché sous forme de tableau ordonné avec le nom de l'équipe et sa place finale
+- Disponible en consultation permanente une fois le tournoi clôturé
 
-### 4.7 Export des Données (v1)
+---
+
+### 4.8 Validation de la Phase 1
+
+Lorsque **tous les résultats de la Phase 1 sont saisis** (24/24 matchs), un bouton « **Valider la Phase 1** » devient disponible.
+
+#### Comportement de la validation
+
+| Étape | Description |
+|-------|-------------|
+| Déclencheur | L'utilisateur clique sur « Valider la Phase 1 » |
+| Confirmation | Une modale de confirmation est affichée : *« Tous les résultats de la Phase 1 vont être verrouillés. Cette action est irréversible. Confirmer ? »* |
+| Après confirmation | Le statut du tournoi passe à `PHASE1_VALIDÉE` |
+| Verrouillage | Tous les scores de Phase 1 sont figés — aucune modification ni effacement possibles |
+| Déblocage Phase 2 | Les matchs de Phase 2 sont générés automatiquement et deviennent accessibles |
+
+#### Pré-requis pour la validation
+
+- Les **24 matchs de Phase 1** doivent tous avoir un résultat saisi.
+- Aucun match ne doit être en attente de départage par tirs au but (critère 6) sans résultat renseigné.
+
+> ⚠️ La validation est **irréversible**. Il n'existe pas de mécanisme pour « dévalider » la Phase 1 sans supprimer l'intégralité du tournoi.
+
+---
+
+### 4.9 Validation de la Phase 2 et Clôture du Tournoi
+
+Lorsque **tous les résultats de la Phase 2 sont saisis** (24/24 matchs, tirs au but inclus si applicable), un bouton « **Valider la Phase 2 et clôturer le tournoi** » devient disponible.
+
+#### Comportement de la validation
+
+| Étape | Description |
+|-------|-------------|
+| Déclencheur | L'utilisateur clique sur « Valider la Phase 2 et clôturer le tournoi » |
+| Confirmation | Une modale de confirmation est affichée : *« Tous les résultats de la Phase 2 vont être verrouillés. Le classement final sera généré. Cette action est irréversible. Confirmer ? »* |
+| Après confirmation | Le statut du tournoi passe à `TERMINÉ` |
+| Verrouillage | Tous les scores de Phase 2 sont figés — aucune modification ni effacement possibles |
+| Classement final | Le classement général des places 1 à 16 est généré et affiché dans un écran dédié |
+| Clôture | Le tournoi passe en mode **consultation seule** — aucune saisie ni modification n'est possible |
+
+#### Pré-requis pour la validation
+
+- Les **24 matchs de Phase 2** doivent tous avoir un résultat saisi.
+- Aucun match ne doit afficher un score nul sans vainqueur des tirs au but désigné.
+
+#### Mode consultation (tournoi clôturé)
+
+Un tournoi à l'état `TERMINÉ` reste **accessible et consultable** depuis la liste des tournois. L'utilisateur peut :
+- Consulter tous les résultats de Phase 1 et Phase 2
+- Consulter les classements de poules
+- Consulter les brackets Phase 2
+- Consulter le classement final (places 1 à 16)
+- Exporter les données au format JSON
+
+Toute action de saisie ou de modification est désactivée et les champs de saisie sont masqués ou en lecture seule. Un bandeau ou badge « Tournoi clôturé » est affiché de manière visible sur toutes les vues du tournoi.
+
+---
+
+### 4.10 Export des Données (v1)
 
 - Export de l'ensemble des données du tournoi au format **JSON**
 - Import d'un fichier JSON pour recharger un tournoi précédemment exporté
@@ -292,33 +424,41 @@ L'utilisateur peut :
 
 ```
 ┌─────────────────────────────────┐
-│  Dashboard (accueil)            │  ← Vue d'ensemble, statut, progression
+│  Liste des Tournois (accueil)   │  ← Tous les tournois, création, suppression
 ├─────────────────────────────────┤
-│  Configuration                  │  ← Nom, date du tournoi
-├─────────────────────────────────┤
-│  Équipes                        │  ← Liste, ajout, modification, suppression
-├─────────────────────────────────┤
-│  Poules & Tirage                │  ← Affectation des équipes aux poules
-├─────────────────────────────────┤
-│  Phase 1 — Matchs & Classements │  ← Matchs par poule, saisie, tableaux
-├─────────────────────────────────┤
-│  Phase 2 — Brackets             │  ← Tableau principal + consolant
-├─────────────────────────────────┤
-│  Classement Final               │  ← Places 1 à 16
+│  [Tournoi sélectionné]          │
+│  ┌───────────────────────────┐  │
+│  │  Tableau de bord          │  │  ← Vue d'ensemble, statut, progression
+│  ├───────────────────────────┤  │
+│  │  Configuration            │  │  ← Nom, date, lieu, nb équipes (lecture seule après création)
+│  ├───────────────────────────┤  │
+│  │  Équipes                  │  │  ← Liste, ajout, modification, suppression
+│  ├───────────────────────────┤  │
+│  │  Poules & Tirage          │  │  ← Affectation des équipes aux poules
+│  ├───────────────────────────┤  │
+│  │  Phase 1 — Matchs         │  │  ← Matchs par poule, saisie, tableaux, validation
+│  ├───────────────────────────┤  │
+│  │  Phase 2 — Brackets       │  │  ← Tableau principal + consolant (après validation P1)
+│  ├───────────────────────────┤  │
+│  │  Classement Final         │  │  ← Places 1 à 16 (généré après clôture, consultation seule)
+│  └───────────────────────────┘  │
 └─────────────────────────────────┘
 ```
 
-### 5.2 Cycle de Vie du Tournoi
+### 5.2 Cycle de Vie d'un Tournoi
 
 ```
 NOUVEAU
-  └─► CONFIGURATION (nom + date saisis)
-        └─► ÉQUIPES_SAISIES (16 équipes enregistrées)
-              └─► POULES_DÉFINIES (tirage validé)
-                    └─► PHASE1_EN_COURS (≥ 1 résultat saisi)
-                          └─► PHASE1_TERMINÉE (24/24 matchs saisis)
-                                └─► PHASE2_EN_COURS (bracket généré, ≥ 1 résultat)
-                                      └─► TERMINÉ (48/48 matchs saisis)
+  └─► CONFIGURÉ (nom + date + lieu + nb équipes saisis)
+        └─► ÉQUIPES_EN_COURS (au moins 1 équipe, nombre cible non atteint)
+              └─► ÉQUIPES_COMPLÈTES (nombre d'équipes cible atteint, poules non générées)
+                    └─► POULES_DÉFINIES (tirage validé, matchs P1 générés)
+                          └─► PHASE1_EN_COURS (≥ 1 résultat saisi)
+                                └─► PHASE1_COMPLÈTE (24/24 matchs saisis, en attente validation)
+                                      └─► PHASE1_VALIDÉE (validation confirmée, scores verrouillés)
+                                            └─► PHASE2_EN_COURS (bracket généré, ≥ 1 résultat)
+                                                  └─► PHASE2_COMPLÈTE (24/24 matchs saisis, en attente validation)
+                                                        └─► TERMINÉ (validation confirmée, tournoi clôturé — consultation seule)
 ```
 
 Chaque état détermine les actions disponibles et verrouille les sections précédentes.
@@ -329,13 +469,15 @@ Chaque état détermine les actions disponibles et verrouille les sections préc
 
 ### 6.1 Entités principales
 
-**Tournoi** : nom, date, statut, horodatage création/modification
+**Liste des tournois** : collection de tournois indépendants, identifiés chacun par un identifiant unique
+
+**Tournoi** : nom, date, lieu, nombre d'équipes cible, statut, horodatage création/modification
 
 **Équipe** : identifiant unique, nom, poule affectée
 
 **Poule** : identifiant (A/B/C/D), liste des équipes
 
-**Match** : phase (1 ou 2), poule/tour, équipe 1, équipe 2, score 1, score 2, score tirs au but 1, score tirs au but 2, statut (à jouer / joué)
+**Match** : phase (1 ou 2), poule/tour, équipe 1, équipe 2, score 1, score 2, statut (à jouer / joué), vainqueur TAB (identifiant équipe, Phase 2 uniquement si score nul)
 
 **Classement de poule** *(calculé)* : points, matchs joués, victoires, nuls, défaites, buts pour, buts contre, différence de buts
 
@@ -344,11 +486,29 @@ Chaque état détermine les actions disponibles et verrouille les sections préc
 ```json
 {
   "version": "1.0",
-  "exportedAt": "2026-04-04T18:00:00Z",
-  "tournament": { "name": "", "date": "", "status": "" },
+  "exportedAt": "2026-04-05T18:00:00Z",
+  "tournament": {
+    "name": "",
+    "date": "",
+    "location": "",
+    "teamCount": 16,
+    "status": "TERMINÉ"
+  },
   "teams": [],
   "groups": [],
-  "matches": []
+  "matches": [
+    {
+      "phase": 2,
+      "round": "QF1",
+      "team1Id": "",
+      "team2Id": "",
+      "score1": 1,
+      "score2": 1,
+      "penaltyWinnerId": "team2Id",
+      "status": "joué"
+    }
+  ],
+  "finalRanking": []
 }
 ```
 
@@ -359,17 +519,19 @@ Chaque état détermine les actions disponibles et verrouille les sections préc
 | Contrainte | Détail |
 |------------|--------|
 | Type | Site web statique — mono-fichier HTML / CSS / JS |
-| Stockage | En mémoire (session) + export/import JSON |
-| Persistance | Export JSON manuel pour sauvegarder et recharger |
+| Stockage | localStorage (persistance entre sessions) + export/import JSON |
+| Persistance | localStorage pour la session courante — export JSON pour sauvegarde externe |
 | Compatibilité | Navigateur desktop moderne (Chrome, Firefox, Edge) |
 | Responsive | Desktop prioritaire — adaptation mobile en meilleur effort |
 | Dépendances | Aucun serveur — 100% client-side |
+
+> **Note v0.4** : le stockage passe de « en mémoire (session) » à **localStorage** pour permettre la persistance des données multi-tournois entre les rechargements de page.
 
 ---
 
 ## 8. Exigences d'Accessibilité et de Conformité (RGAA)
 
-L'application est conçue selon une approche **"accessibility by design"** et vise un haut niveau de conformité au **RGAA 4.x** (Référentiel Général d'Amélioration de l'Accessibilité), référentiel officiel français organisé en 13 thématiques et 106 critères.
+L'application est conçue selon une approche **«accessibility by design»** et vise un haut niveau de conformité au **RGAA 4.x** (Référentiel Général d'Amélioration de l'Accessibilité), référentiel officiel français organisé en 13 thématiques et 106 critères.
 
 ### 8.1 Principes généraux
 
@@ -393,7 +555,7 @@ L'application est conçue selon une approche **"accessibility by design"** et vi
 |----------|--------|
 | Navigation clavier | Tous les éléments interactifs accessibles via Tab / Entrée / Espace / Échap |
 | Focus visible | Indicateur de focus visible sur tous les éléments interactifs |
-| Lien d'évitement | Lien "Aller au contenu principal" comme premier élément focusable |
+| Lien d'évitement | Lien «Aller au contenu principal» comme premier élément focusable |
 | Ordre de tabulation | Ordre logique et cohérent avec la disposition visuelle |
 
 ### 8.4 Exigences visuelles et de contraste
@@ -412,8 +574,9 @@ L'application est conçue selon une approche **"accessibility by design"** et vi
 | Labels | Chaque `<input>` associé à un `<label>` explicite |
 | Messages d'erreur | Textuels, spécifiques, proches du champ concerné |
 | État des composants | États actif, désactivé, invalide, requis annoncés programmatiquement |
-| Annonces dynamiques | Changements importants annoncés via `aria-live` (ex : "Résultat enregistré", "Phase 2 générée") |
+| Annonces dynamiques | Changements importants annoncés via `aria-live` (ex : «Résultat enregistré», «Phase 1 validée», «Phase 2 générée») |
 | Groupes de champs | `<fieldset>` / `<legend>` pour les groupes de contrôles liés |
+| Modales de confirmation | Focus piégé dans la modale, fermeture via Échap, annonce du message via `role="alertdialog"` |
 
 ### 8.6 Exigences médias et composants riches
 
@@ -432,6 +595,7 @@ L'application est conçue selon une approche **"accessibility by design"** et vi
 - [ ] Vérification de la hiérarchie des titres
 - [ ] Vérification des labels de formulaires et messages d'erreur
 - [ ] Vérification des annonces `aria-live`
+- [ ] Vérification des modales de confirmation (focus trap, `role="alertdialog"`)
 - [ ] Vérification responsive (zoom 200%, 400%)
 - [ ] Validation HTML (Nu Html Checker)
 
@@ -442,18 +606,16 @@ L'application est conçue selon une approche **"accessibility by design"** et vi
 | # | Question | Impact | Priorité |
 |---|----------|--------|----------|
 | 1 | Design visuel exact : palette de couleurs, typographie — à valider sur maquette | UI | Avant développement |
-| 2 | Comportement à la perte de données (rechargement sans export) : avertissement ? | UX | À définir en dev |
+| 2 | Comportement à la perte de données (effacement du localStorage) : avertissement à l'export ? | UX | À définir en dev |
+| 3 | Nombre d'équipes paramétrable : adapter la génération des poules pour un nombre différent de 16 (ex. : 8 équipes → 2 poules) | Fonctionnel | v1 si besoin, sinon v2 |
 
 ---
 
-**Note** : Tous les points fonctionnels (règles de départage, matchs de classement, grilles d'appariement, export JSON v1) sont validés et intégrés dans la spécification. Les points résiduels ci-dessus concernent uniquement l'implémentation technique et l'UX.
+**Note** : Tous les points fonctionnels (gestion multi-tournois, règles de gestion des équipes, workflow de validation Phase 1 et Phase 2, tirs au but Phase 2, clôture et consultation du tournoi, règles de départage, matchs de classement, grilles d'appariement, export JSON v1) sont validés et intégrés dans la spécification. Les points résiduels ci-dessus concernent uniquement l'implémentation technique et l'UX.
 
-*Version 0.3 — Spécification complète. Prêt pour le développement écran par écran.*
-
+*Version 0.5 — Spécification mise à jour le 05 avril 2026. Prêt pour le développement écran par écran.*
 
 ---
-
-*Version 0.3 — Spécification complète et validée. Prêt pour le développement écran par écran.*
 
 ## 10. Roadmap des Fonctionnalités Futures
 
