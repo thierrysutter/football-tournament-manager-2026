@@ -454,3 +454,13 @@ L'application est conçue selon une approche **"accessibility by design"** et vi
 ---
 
 *Version 0.3 — Spécification complète et validée. Prêt pour le développement écran par écran.*
+
+## 10. Roadmap des Fonctionnalités Futures
+
+Pour une vision détaillée des fonctionnalités planifiées pour les versions futures (v2.0, v3.0, etc.), consulter le fichier **[roadmap.md](./roadmap.md)** dans le répertoire `docs/`.
+
+Ce document de roadmap inclut :
+- Les fonctionnalités non implémentées dans v1.0
+- Les priorités et critères de priorisation
+- Le processus de développement et versioning
+- Les notes de conception technique
