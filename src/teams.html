@@ -145,7 +145,7 @@
                     <div class="team-item">
                         <span class="team-num">${i + 1}</span>
                         <span class="team-name">${escapeHtml(t.name)}</span>
-                        <button class="btn-delete" onclick="deleteTeam(${t.id})" title="Supprimer">&times;</button>
+                        <button class="btn-delete" onclick="window.deleteTeam(${t.id})" title="Supprimer">&times;</button>
                     </div>`).join('') +
                 '</div>';
         }
